@@ -32,6 +32,7 @@ RES_URL = 'http://127.0.0.1:5000/static/'
 # 切忌一次性开启多个
 MODULES_ON = {
     'botmanage',
+    'boxcolle',
     'dice',
     'flac',
     'groupmaster',
