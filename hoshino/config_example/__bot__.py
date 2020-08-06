@@ -43,4 +43,5 @@ MODULES_ON = {
     'shebot',
     'somefunction',
     'translate',
+    'yitusotu',
 }
