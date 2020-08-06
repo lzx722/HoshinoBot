@@ -41,11 +41,6 @@ async def seina(bot, ev):
     await bot.send(ev, R.img('星奏.png').cqcode)
 
 
-@sv.on_fullmatch(('我有个朋友说他好了', '我朋友说他好了', ))
-async def ddhaole(bot, ev):
-    await bot.send(ev, '那个朋友是不是你弟弟？')
-    await util.silence(ev, 30)
-
 
 @sv.on_fullmatch('我好了')
 async def nihaole(bot, ev):

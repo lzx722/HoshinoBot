@@ -26,7 +26,6 @@ async def search_flac(bot, ev: CQEvent):
     msg = [
         f"共 {res['result']['totalElements']} 条结果" if len(music_list) > 0 else '没有任何结果',
         *details,
-        '数据来自 www.acgjc.com',
         f'更多结果可见 www.acgjc.com/?s={quote(keyword)}'
     ]
 

@@ -24,9 +24,14 @@ aliases = ('怎么拆', '怎么解', '怎么打', '如何拆', '如何解', '如
 aliases_b = tuple('b' + a for a in aliases) + tuple('B' + a for a in aliases)
 aliases_tw = tuple('台' + a for a in aliases)
 aliases_jp = tuple('日' + a for a in aliases)
+aliases_all = tuple('全' + a for a in aliases)
 
 @sv.on_prefix(aliases)
 async def arena_query(bot, ev):
+    await _arena_query(bot, ev, region=2)   #默认查询国服
+
+@sv.on_prefix(aliases_all)
+async def arena_query_all(bot, ev):
     await _arena_query(bot, ev, region=1)
 
 @sv.on_prefix(aliases_b)
@@ -105,20 +110,22 @@ async def _arena_query(bot, ev: CQEvent, region: int):
     ]) for e in res ]
 
     defen = [ chara.fromid(x).name for x in defen ]
-    defen = f"防守方【{' '.join(defen)}】"
+    defen = f"【{' '.join(defen)}】"
     at = str(MessageSegment.at(ev.user_id))
 
     msg = [
         defen,
-        f'已为骑士{at}查询到以下进攻方案：',
+        f'已为骑士君{at}查询到以下进攻方案：',
         str(atk_team),
         f'作业评价：',
         *details,
         '※发送"点赞/点踩"可进行评价'
     ]
     if region == 1:
-        msg.append('※使用"b怎么拆"或"台怎么拆"可按服过滤')
-    msg.append('Support by pcrdfans_com')
+        msg.append('※使用[b/台/日怎么拆]可按服过滤结果，[怎么打]默认b服')
+    else:
+        # msg.append('※公会战期间应该无法使用机器人查询jjc，如有需要请加群:1131435651,回答123')
+        pass
 
     sv.logger.debug('Arena sending result...')
     await bot.send(ev, '\n'.join(msg))
