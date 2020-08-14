@@ -6,6 +6,7 @@ import json
 import traceback
 import nonebot
 import threading 
+from datetime import timedelta
 
 from queue import Queue
 from .api import get_final_setu,get_final_setu_async
@@ -51,7 +52,7 @@ async def _(bot,ctx):
     uid = ctx['user_id']
     self_id = ctx['self_id']
     gid = ctx.get('group_id',0)
-    user_priv = priv.get_user_priv
+    # user_priv = priv.get_user_priv
     is_to_delete = True if gid in g_delete_groups else False
     if COMMON_RE.match(message):
         if not g_is_online:
@@ -78,7 +79,7 @@ async def _(bot,ctx):
                 keyword = keyword[1:]
             print(f"含有关键字{keyword}")
             if priv.get_user_priv(ctx) < priv.SUPERUSER:
-                sv.add_black_user(uid,60)
+                priv.set_block_user(uid,timedelta(seconds=60))
                 setus = await get_final_setu_async(search_path,keyword=keyword,r18=0)
             else:
                 setus = await get_final_setu_async(search_path,keyword=keyword,r18=2) 
@@ -119,7 +120,7 @@ async def _(bot,ctx):
         print("发送r18")
         await send_setus(bot,ctx,r18_path,setus,g_with_url,is_to_delete)
         if priv.get_user_priv(ctx) < priv.SUPERUSER:
-            sv.set_block_user(uid,10)
+            priv.set_block_user(uid,timedelta(seconds=10))
     else:
         print('无关消息')
 
