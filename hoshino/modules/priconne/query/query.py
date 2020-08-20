@@ -8,7 +8,7 @@ p2 = R.img('priconne/quick/r16-5-tw-1.png').cqcode
 p4 = R.img('priconne/quick/r17-5-jp-1.png').cqcode
 p5 = R.img('priconne/quick/r17-5-jp-2.png').cqcode
 p6 = R.img('priconne/quick/r17-5-jp-3.png').cqcode
-p7 = R.img('priconne/quick/r9-5-cn.png').cqcode
+p7 = R.img('priconne/quick/r10-3-cn.jpg').cqcode
 
 @sv.on_rex(r'^(\*?([日台国陆b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$')
 async def rank_sheet(bot, ev):
@@ -20,7 +20,7 @@ async def rank_sheet(bot, ev):
         await bot.send(ev, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*陆rank表', at_sender=True)
         return
     msg = [
-        '\n※表格仅供参考，升r有风险，强化需谨慎\n※一切以会长要求为准——',
+        '\n※表格仅供参考，升r有风险，强化需谨慎\n※一切以会长要求为准',
     ]
     if is_jp:
         msg.append('※不定期搬运自图中Q群\n※广告为原作者推广，与本bot无关\nR17-5 rank表：')
@@ -32,15 +32,15 @@ async def rank_sheet(bot, ev):
         if not pos or '后' in pos:
             msg.append(str(p6))
         await bot.send(ev, '\n'.join(msg), at_sender=True)
-        await util.silence(ev, 60)
+        # await util.silence(ev, 60)
     elif is_tw:
         msg.append(f'※不定期搬运自漪夢奈特\n※油管频道有介绍视频及原文档\nR16-5 rank表：\n{p1} {p2}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
-        await util.silence(ev, 60)
+        # await util.silence(ev, 60)
     elif is_cn:
-        msg.append(f'※不定期搬运自NGA\n※制作by艾琳娜 代发by@黑漫飒麻\nR9-5 rank表：\n{p7}')
+        msg.append(f'※图中广告为原作者推广，与本bot无关\nR10-3 rank表：\n{p7}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
-        await util.silence(ev, 60)
+        # await util.silence(ev, 60)
 
 
 @sv.on_fullmatch(('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'jjc数据库', 'JJC作業', 'JJC作業網', 'JJC數據庫', 'jjc作業', 'jjc作業網', 'jjc數據庫'))
