@@ -78,14 +78,17 @@ async def _(bot,ctx):
             while keyword[0] == ' ':
                 keyword = keyword[1:]
             print(f"含有关键字{keyword}")
-            if priv.get_user_priv(ctx) < priv.SUPERUSER:
-                priv.set_block_user(uid,timedelta(seconds=60))
-                setus = await get_final_setu_async(search_path,keyword=keyword,r18=0)
-            else:
-                setus = await get_final_setu_async(search_path,keyword=keyword,r18=2) 
-            await send_setus(bot,ctx,search_path,setus,g_with_url,is_to_delete)
+            try:
+                if priv.get_user_priv(ctx) < priv.SUPERUSER:
+                    priv.set_block_user(uid,timedelta(seconds=10))
+                    setus = await get_final_setu_async(search_path,keyword=keyword,r18=0)
+                else:
+                    setus = await get_final_setu_async(search_path,keyword=keyword,r18=2) 
+                await send_setus(bot,ctx,search_path,setus,g_with_url,is_to_delete)
+            except:
+                msg = '请使用pixiv画师可能使用的名称/标签，并且不要用搜索对象的别称(别称不行)。'
+                await bot.send(ctx,f'\n抱歉，出错了，好像没有搜索结果。\n{msg}',at_sender=True)
             
-
         else:
             setus = wh.fetch(num)
             if not send_setus:#send_setus为空
