@@ -13,6 +13,7 @@ sv = Service('checkReport')
 async def set_test(bot, ev: CQEvent):
     status = 0
     text = ev['message'][0]['data']['text']
+    raw_message = ev['raw_message']
     if text == '':
         return
     try:
@@ -21,10 +22,19 @@ async def set_test(bot, ev: CQEvent):
         status = -1
     if status == -1:
         return
+    if raw_message[0] == ' ':
+        return
+    if len(raw_message) < 4:
+        return
+    if raw_message[3] == ' ':
+        return
 
-    if report < 250000:
-        await bot.send(ev, f'\n您报告的伤害较小，请检查是否少报了一位数',at_sender=True)
-    elif report > 2500000:
-        await bot.send(ev, f'\n您报告的伤害较大，请检查是否多报了一位数',at_sender=True)
+    msg1 = '警告！您报的伤害较小，请确定是否为尾刀。如果不是尾刀，请检查是否少报了一位数'
+    msg2 = '警告！您报的伤害较大，请检查是否多报了一位数'
+    msg3 = f'============\n此为辅助程序判断，并不影响您报刀'
+    if report < 150000:
+        await bot.send(ev, f'\n{msg1}\n{msg3}',at_sender=True)
+    elif report > 1500000:
+        await bot.send(ev, f'\n{msg2}\n{msg3}',at_sender=True)
     else:
         return

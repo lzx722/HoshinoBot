@@ -68,7 +68,7 @@ async def get_rank(info,info_type):
 
 @sv1.scheduled_job('cron', hour='5', minute='18')
 async def pcr_timing_1():
-    msg = await get_rank('重生之来',"name")
+    msg = await get_rank('可可萝宇内',"name")
     msg += f"此为自动查询5点时的排名"
     await sv1.broadcast(msg, 'pcr_timing_1', 0.2)
 
@@ -82,6 +82,6 @@ async def pcr_timing_2():
 async def pcr_timing_3():
     msg = await get_rank('美食殿堂养生',"name")
     msg += f"此为自动查询5点时的排名"
-    await sv2.broadcast(msg, 'pcr_timing_3', 0.2)
+    await sv3.broadcast(msg, 'pcr_timing_3', 0.2)
 
 
