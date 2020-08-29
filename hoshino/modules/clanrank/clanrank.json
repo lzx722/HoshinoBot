@@ -1,0 +1,62 @@
+{
+    "1131435651": {
+        "clanName": "可可萝宇内第一可爱~",
+        "leaderName": "[a1]悠悠",
+        "leaderId": 1031573547595,
+        "lastQuery": {
+            "code": 0,
+            "msg": "",
+            "data": [
+                {
+                    "rank": 1111,
+                    "damage": 288230293,
+                    "clan_name": "可可萝宇内第一可爱~",
+                    "leader_name": "[a1]悠悠",
+                    "leader_viewer_id": 1031573547595
+                }
+            ],
+            "ts": 1598407207,
+            "full": 0
+        }
+    },
+    "1149683421": {
+        "clanName": "美食殿堂养生协会",
+        "leaderName": "回声",
+        "leaderId": 1409116945907,
+        "lastQuery": {
+            "code": 0,
+            "msg": "",
+            "data": [
+                {
+                    "rank": 330,
+                    "damage": 280064977,
+                    "clan_name": "美食殿堂养生协会",
+                    "leader_name": "回声",
+                    "leader_viewer_id": 1409116945907
+                }
+            ],
+            "ts": 1598376606,
+            "full": 0
+        }
+    },
+    "1022516440": {
+        "clanName": "妈，保佑我出老婆！",
+        "leaderName": "相当欧皇",
+        "leaderId": 1346598520387,
+        "lastQuery": {
+            "code": 0,
+            "msg": "",
+            "data": [
+                {
+                    "rank": 5935,
+                    "damage": 252752392,
+                    "clan_name": "妈，保佑我出老婆！",
+                    "leader_name": "相当欧皇",
+                    "leader_viewer_id": 1346598520387
+                }
+            ],
+            "ts": 1598407207,
+            "full": 0
+        }
+    }
+}
