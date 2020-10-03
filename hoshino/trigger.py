@@ -1,10 +1,7 @@
 import re
 
 import pygtrie
-<<<<<<< HEAD
-=======
 import zhconv
->>>>>>> upstream/master
 
 import hoshino
 from hoshino import util
