@@ -8,6 +8,8 @@ from nonebot.message import CanceledException
 from .log import new_logger
 from . import config
 
+__version__ = '2.1.0'
+
 _bot = None
 HoshinoBot = nonebot.NoneBot
 os.makedirs(os.path.expanduser('~/.hoshino'), exist_ok=True)
@@ -51,8 +53,3 @@ def get_self_ids():
 
 from . import R
 from .service import Service, sucmd
-
-from .textfilter.filter import DFAFilter
-
-gfw = DFAFilter()
-gfw.parse(os.path.join(os.path.dirname(__file__), 'textfilter/sensitive_words.txt'))
