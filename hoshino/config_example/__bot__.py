@@ -45,4 +45,5 @@ MODULES_ON = {
     'somefunction',
     'translate',
     'yitusotu',
+    'yobot',
 }
