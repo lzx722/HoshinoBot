@@ -23,7 +23,7 @@ async def rank_sheet(bot, ev):
         '\n※表格仅供参考，升r有风险，强化需谨慎\n※一切以会长要求为准',
     ]
     if is_jp:
-        msg.append('※不定期搬运自图中Q群\n※广告为原作者推广，与本bot无关\nR17-5 rank表：')
+        msg.append('※不定期搬运自图中Q群\n※广告为原作者推广，与本bot无关\nR18-4 rank表：')
         pos = match.group(3)
         if not pos or '前' in pos:
             msg.append(str(p4))
@@ -34,11 +34,11 @@ async def rank_sheet(bot, ev):
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         # await util.silence(ev, 60)
     elif is_tw:
-        msg.append(f'※不定期搬运自漪夢奈特\n※油管频道有介绍视频及原文档\nR16-5 rank表：\n{p1} {p2}')
+        msg.append(f'※不定期搬运自漪夢奈特\n※油管频道有介绍视频及原文档\nR17-4 rank表：\n{p1} {p2}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         # await util.silence(ev, 60)
     elif is_cn:
-        msg.append(f'※图中广告为原作者推广，与本bot无关\nR10-3 rank表：\n{p7}')
+        msg.append(f'※不定期搬运自NGA\n※制作by雪颜香\nR10-4 rank表：\n{p7}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         # await util.silence(ev, 60)
 
