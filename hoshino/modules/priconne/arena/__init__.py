@@ -21,7 +21,7 @@ from . import arena
 
 lmt = FreqLimiter(5)
 
-aliases = ('怎么拆', '怎么解', '怎么打', '如何拆', '如何解', '如何打', '怎麼拆', '怎麼解', '怎麼打', 'jjc查询', 'jjc查詢')
+aliases = ('怎么拆', '怎么解', '怎么打', '如何拆', '如何解', '如何打', 'jjc查询')
 aliases_b = tuple('b' + a for a in aliases) + tuple('B' + a for a in aliases)
 aliases_tw = tuple('台' + a for a in aliases)
 aliases_jp = tuple('日' + a for a in aliases)
@@ -199,7 +199,7 @@ async def _arena_feedback(bot, ev: CQEvent, action: int):
     await bot.send(ev, '感谢您的反馈！', at_sender=True)
 
 
-@sv.on_command('arena-upload', aliases=('上传作业', '作业上传', '上傳作業', '作業上傳'))
+@sv.on_command('arena-upload', aliases=('上传作业', '作业上传'))
 async def upload(ss: CommandSession):
     atk_team = ss.get('atk_team', prompt='请输入进攻队+星级(1-6)+专武(0/1) 无需空格')
     def_team = ss.get('def_team', prompt='请输入防守队+星级(1-6)+专武(0/1) 无需空格')
