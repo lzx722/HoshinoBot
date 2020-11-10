@@ -36,7 +36,7 @@ async def set_test(bot, ev: CQEvent):
 
     if report < 0:
         await bot.send(ev, f'\n{msg1}\n{msg3}',at_sender=True)
-    elif report > 1800000:
+    elif report > 3600000:
         await bot.send(ev, f'\n{msg2}\n{msg3}',at_sender=True)
     else:
         return
