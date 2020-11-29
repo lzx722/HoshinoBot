@@ -9,7 +9,7 @@ single_dict_qun ={}
 
 
 # 注册服务
-# sv = Service('报刀统计',enable_on_default=False)
+sv = Service('报刀统计',enable_on_default=False)
 
 def Read_Json():
     global all_dict
@@ -24,7 +24,7 @@ def Write_Json():
         json.dump(all_dict,f)
 
 
-@sv.on_prefix(('报刀'))
+# @sv.on_prefix(('报刀'))
 async def StatisticalReport(bot, ev: CQEvent):
     name = str(ev['sender']['card'])
     qq = str(ev['user_id'])
