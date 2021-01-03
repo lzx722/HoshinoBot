@@ -1,5 +1,6 @@
 import re
 import time
+import asyncio
 from collections import defaultdict
 from PIL import Image, ImageDraw, ImageFont
 
@@ -121,13 +122,16 @@ async def _arena_query(bot, ev: CQEvent, region: int):
     try:
         res = await arena.do_query(defen, uid, region)
     except hoshino.aiorequests.HTTPError as e:
-        if e.response["code"] == 117:
+        code = e.response["code"]
+        if code == 117:
             await bot.finish(ev, "高峰期服务器限流！请前往pcrdfans.com/battle")
+        else:
+            await bot.finish(ev, f'code{code} 查询出错，请联系维护组调教\n请先前往pcrdfans.com进行查询', at_sender=True)
     sv.logger.info('Got response!')
 
     # 处理查询结果
     if res is None:
-        await bot.finish(ev, '查询出错，请联系维护组调教\n请先移步pcrdfans.com进行查询', at_sender=True)
+        await bot.finish(ev, '数据库未返回数据，请再次尝试查询或前往pcrdfans.com', at_sender=True)
     if not len(res):
         await bot.finish(ev, '抱歉没有查询到解法\n※没有作业说明随便拆 发挥你的想象力～★\n作业上传请前往pcrdfans.com', at_sender=True)
     res = res[:min(6, len(res))]    # 限制显示数量，截断结果
@@ -158,7 +162,7 @@ async def _arena_query(bot, ev: CQEvent, region: int):
         str(teams),
         # '作业评价：',
         # *details,
-        '※发送"点赞/点踩"可进行评价'
+        # '※发送"点赞/点踩"可进行评价'
     ]
     if region == 1:
         msg.append('※使用[b/台/日怎么拆]可按服过滤结果，[怎么打]默认b服')
@@ -201,8 +205,8 @@ async def _arena_feedback(bot, ev: CQEvent, action: int):
 
 @sv.on_command('arena-upload', aliases=('上传作业', '作业上传'))
 async def upload(ss: CommandSession):
-    atk_team = ss.get('atk_team', prompt='请输入进攻队+星级(1-6)+专武(0/1) 无需空格')
-    def_team = ss.get('def_team', prompt='请输入防守队+星级(1-6)+专武(0/1) 无需空格')
+    atk_team = ss.get('atk_team', prompt='请输入进攻队+5个表示星级的数字+5个表示专武的0/1 无需空格')
+    def_team = ss.get('def_team', prompt='请输入防守队+5个表示星级的数字+5个表示专武的0/1 无需空格')
     if 'pic' not in ss.state:
         ss.state['pic'] = MessageSegment.image(pic2b64(concat_pic([
             chara.gen_team_pic(atk_team),
@@ -217,6 +221,7 @@ async def upload(ss: CommandSession):
 async def _(ss: CommandSession):
     if ss.is_first_run:
         await ss.send('我将帮您上传作业至pcrdfans，作业将注明您的昵称及qq。您可以随时发送"算了"或"取消"终止上传。')
+        await asyncio.sleep(0.5)
         return
     arg = ss.current_arg_text.strip()
     if arg == '算了' or arg == '取消':
