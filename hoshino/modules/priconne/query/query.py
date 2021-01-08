@@ -5,14 +5,13 @@ from . import sv
 
 rank_jp = '19-4'
 rank_tw = '18-3'
-rank_cn = '11-4'
-p1 = R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode
-p2 = R.img(f'priconne/quick/r{rank_tw}-tw-1.png').cqcode
+rank_cn = '11-5'
+p1 = R.img(f'priconne/quick/r{rank_tw}-tw-1.png').cqcode
+p2 = R.img(f'priconne/quick/r{rank_tw}-tw-2.png').cqcode
 p4 = R.img(f'priconne/quick/r{rank_jp}-jp-1.png').cqcode
 p5 = R.img(f'priconne/quick/r{rank_jp}-jp-2.png').cqcode
 p6 = R.img(f'priconne/quick/r{rank_jp}-jp-3.png').cqcode
 p7 = R.img(f'priconne/quick/r{rank_cn}-cn-1.png').cqcode
-p8 = R.img(f'priconne/quick/r{rank_cn}-cn-2.png').cqcode
 
 @sv.on_rex(r'^(\*?([日台国陆b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$')
 async def rank_sheet(bot, ev):
@@ -43,7 +42,7 @@ async def rank_sheet(bot, ev):
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         # await util.silence(ev, 60)
     elif is_cn:
-        msg.append(f'※不定期搬运自B站专栏\n※制作by席巴鸽\nR{rank_cn} rank表：\n{p7} {p8}')
+        msg.append(f'※不定期搬运自B站专栏\n※制作by公主大魔王\nR{rank_cn} rank表：\n{p7}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         # await util.silence(ev, 60)
 

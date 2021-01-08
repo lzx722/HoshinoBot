@@ -3,10 +3,10 @@
 from retrying import retry  # => 引入retry装饰器
 from github import Github
 import json, os, time
-from hoshino import Service,priv
+from hoshino import Service,priv,config
 from hoshino.typing import CQEvent
 
-g = Github("b3520d94233977ff9dce38bc79f70a388120f9f1")
+g = Github(config.somefunction.apikey.TOKEN_KEY)
 all_dict = {}
 single_dict = {'Commit_Sha':'','Branch':''}
 
@@ -52,6 +52,29 @@ def Get_Branch(project):
         print(e)
         return ''
 
+# 全部项目追踪一次
+def Check_Updates():
+    msg = ''
+    Read_Json()
+    for project in all_dict:
+        time.sleep(5)
+        branch = all_dict[project]['Branch']
+        sha, message = Get_Commit(project, branch)
+        if sha == '':
+            msg += f'项目{project}无法获取更新情况\n'
+        else:
+            if sha == all_dict[project]['Commit_Sha']:
+                print(f'git项目{project}没有发现更新')
+                pass
+            else:
+                all_dict[project]['Commit_Sha'] = sha
+                Write_Json()
+                msg += f'项目{project}有更新，该项目目前的最新的版本为：{sha[:7]}，更新说明是：\n{message}\n'
+    if msg == '':
+        print('所有追踪的git项目都没有发现更新')
+    return msg
+        
+
 
 @sv.on_prefix(('新建追踪','建立追踪'))
 async def NewTrack(bot, ev: CQEvent):
@@ -81,27 +104,17 @@ async def NewTrack(bot, ev: CQEvent):
 
 
 @sv.scheduled_job('cron', hour='10', minute='50')
-async def Check_Updates():
-    msg = ''
-    Read_Json()
-    for project in all_dict:
-        time.sleep(15)
-        branch = all_dict[project]['Branch']
-        sha, message = Get_Commit(project, branch)
-        if sha == '':
-            msg += f'项目{project}无法获取更新情况\n'
-        else:
-            if sha == all_dict[project]['Commit_Sha']:
-                print(f'git项目{project}没有发现更新')
-                pass
-            else:
-                all_dict[project]['Commit_Sha'] = sha
-                Write_Json()
-                msg += f'项目{project}有更新，该项目目前的最新的版本为：{sha[:7]}，更新说明是：\n{message}\n'
-    if msg == '':
-        print('所有追踪的git项目都没有发现更新')
-    else:
+async def Timing_Check_Updates():
+    msg = Check_Updates()
+    if msg != '':
         await sv.broadcast(msg, 'git项目追踪', 0.2)
+
+
+@sv.on_prefix(('立刻追踪','现在追踪'))
+async def Now_Check_Updates(bot, ev: CQEvent):
+    msg = Check_Updates()
+    if msg != '':
+        await bot.send(ev,msg)
 
 
 @sv.on_prefix(('检查追踪','查看追踪'))
