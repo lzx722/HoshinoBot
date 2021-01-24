@@ -133,7 +133,9 @@ async def _arena_query(bot, ev: CQEvent, region: int):
     if res is None:
         await bot.finish(ev, '数据库未返回数据，请再次尝试查询或前往pcrdfans.com', at_sender=True)
     if not len(res):
-        await bot.finish(ev, '抱歉没有查询到解法\n※没有作业说明随便拆 发挥你的想象力～★\n作业上传请前往pcrdfans.com', at_sender=True)
+        msg = '抱歉没有查询到解法\n※没有作业说明随便拆 发挥你的想象力～★\n作业上传请前往pcrdfans.com'
+        msg += '\n※目前无法查询阵容里有环奈的，请上作业网查~'
+        await bot.finish(ev, msg, at_sender=True)
     res = res[:min(6, len(res))]    # 限制显示数量，截断结果
 
     # 发送回复
