@@ -49,7 +49,7 @@ async def rank_sheet(bot, ev):
 
 @sv.on_fullmatch(('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'jjc数据库'))
 async def say_arina_database(bot, ev):
-    await bot.send(ev, '公主连接Re:Dive 竞技场编成数据库\n日文：https://nomae.net/arenadb \n中文：https://pcrdfans.com/battle')
+    await bot.send(ev, f'公主连接Re:Dive 竞技场编成数据库\n中文：https://pcrdfans.com/battle\n日文：https://nomae.net/arenadb')
 
 
 OTHER_KEYWORDS = '【日rank】【台rank】【b服rank】【jjc作业网】【黄骑充电表】【一个顶俩】'
