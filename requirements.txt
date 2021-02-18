@@ -21,3 +21,4 @@ PyGithub
 arrow
 peewee
 expiringdict
+html2text
