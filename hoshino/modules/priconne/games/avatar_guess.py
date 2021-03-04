@@ -9,7 +9,7 @@ import os
 import random
 
 from hoshino import Service, util
-from hoshino.modules.priconne import _pcr_data, chara
+from hoshino.modules.priconne import _pcr_data_1, chara
 from hoshino.typing import CQEvent
 from hoshino.typing import MessageSegment as Seg
 
@@ -50,7 +50,7 @@ async def avatar_guess(bot, ev: CQEvent):
     if gm.is_playing(ev.group_id):
         await bot.finish(ev, "游戏仍在进行中…")
     with gm.start_game(ev.group_id) as game:
-        ids = list(_pcr_data.CHARA_NAME.keys())
+        ids = list(_pcr_data_1.CHARA_NAME.keys())
         game.answer = random.choice(ids)
         while chara.is_npc(game.answer):
             game.answer = random.choice(ids)
