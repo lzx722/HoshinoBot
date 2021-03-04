@@ -27,18 +27,18 @@ async def rank_sheet(bot, ev):
         # '\n※rank表仅供参考，升r有风险，强化需谨慎\n※请以会长要求为准',
     ]
     if is_jp:
-        msg.append(f'※不定期搬运自图中Q群\n※广告为原作者推广，与本bot无关\nR{rank_jp} rank表：')
-        pos = match.group(3)
-        if not pos or '前' in pos:
-            msg.append(str(p4))
-        if not pos or '中' in pos:
-            msg.append(str(p5))
-        if not pos or '后' in pos:
-            msg.append(str(p6))
+        msg.append(f'※不定期搬运自图中Q群\n※广告为原作者推广，与本bot无关\nR{rank_jp} rank表：\n{pjp}')
+        # pos = match.group(3)
+        # if not pos or '前' in pos:
+        #     msg.append(str(p4))
+        # if not pos or '中' in pos:
+        #     msg.append(str(p5))
+        # if not pos or '后' in pos:
+        #     msg.append(str(p6))
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         # await util.silence(ev, 60)
     elif is_tw:
-        msg.append(f'※不定期搬运自漪夢奈特\n※详见油管频道\nR{rank_tw} rank表：\n{p1} {p2}')
+        msg.append(f'※不定期搬运自漪夢奈特\n※详见油管频道\nR{rank_tw} rank表：\n{ptw}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         # await util.silence(ev, 60)
     elif is_cn:
