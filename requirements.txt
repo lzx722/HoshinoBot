@@ -16,7 +16,7 @@ aiohttp>=3.6
 retrying
 logzero
 opencc
-feedparser
+feedparser~=5.2
 PyGithub
 arrow
 peewee
