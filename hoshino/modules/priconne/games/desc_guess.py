@@ -12,7 +12,7 @@ from hoshino import Service, util
 from hoshino.modules.priconne import chara
 from hoshino.typing import CQEvent, MessageSegment as Seg
 
-from .. import _pcr_data
+from .. import _pcr_data_1
 from . import GameMaster
 
 
@@ -46,8 +46,8 @@ async def description_guess(bot, ev: CQEvent):
     if gm.is_playing(ev.group_id):
         await bot.finish(ev, "游戏仍在进行中…")
     with gm.start_game(ev.group_id) as game:
-        game.answer = random.choice(list(_pcr_data.CHARA_PROFILE.keys()))
-        profile = _pcr_data.CHARA_PROFILE[game.answer]
+        game.answer = random.choice(list(_pcr_data_1.CHARA_PROFILE.keys()))
+        profile = _pcr_data_1.CHARA_PROFILE[game.answer]
         kws = list(profile.keys())
         kws.remove('名字')
         random.shuffle(kws)
