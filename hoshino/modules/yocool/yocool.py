@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import hoshino, os, json, shutil, zipfile, asyncio, glob
 from nonebot import on_command, get_bot, scheduler
-from hoshino import aiorequests, util
+from hoshino import aiorequests, util,config
 
 # 自动更新结果是否通知主人
 NOTICE = False
