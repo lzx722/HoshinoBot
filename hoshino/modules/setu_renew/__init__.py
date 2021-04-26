@@ -191,7 +191,7 @@ async def send_setu(bot, ev):
 			value = int(args[2])
 		else:
 			value = None
-		if key and value:
+		if key and (not value is None):
 			set_group_config(gid, key, value)
 			msg = '设置成功！当前设置值如下:\n'
 			msg += f'群/{gid} : 设置项/{key} = 值/{value}'
@@ -386,7 +386,7 @@ async def get_spec_setu(bot, ev):
 		await bot.send(ev, 'p站id无效,应为8位数字id哦~')
 
 
-@sv.scheduled_job('interval', minutes=10)
+@sv.scheduled_job('interval', minutes=1000)
 async def fetch_setu_process():
 	await fetch_process()
 
