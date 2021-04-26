@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import hoshino, os, json, shutil, zipfile, asyncio, glob
 from nonebot import on_command, get_bot, scheduler
-from hoshino import aiorequests, util,config
+from hoshino import aiorequests, util
 
 # 自动更新结果是否通知主人
 NOTICE = False
@@ -19,7 +19,7 @@ except:
 try:
     yobot_path  = config.yobot_path
 except:
-    yobot_path = './hoshino/modules/yobot/yobot/'
+    yobot_path = '/root/yobot/'
 
 yobot_themes_path = os.path.join(yobot_path, 'src', 'client', 'public')
 yocool_themes_path = os.path.join(path, 'public')
