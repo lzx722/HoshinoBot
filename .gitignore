@@ -135,5 +135,5 @@ venv.bak/
 z-run.bat
 hoshino/modules/priconne/_pcr_data.py
 hoshino/modules/priconne/gacha/config.json
-hoshino/modules/yocool/backup
-hoshino/modules/yocool/yocool_info.json
+hoshino/modules/YoCool-Console/backup
+hoshino/modules/YoCool-Console/yocool_info.json
