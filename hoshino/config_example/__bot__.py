@@ -46,4 +46,7 @@ MODULES_ON = {
     'translate',
     'yitusotu',
     'yobot',
+    # 'translate',
+    # 'twitter',            # 轮询版转推（old）
+    # 'twitter_stream',     # 推流版转推（beta）
 }

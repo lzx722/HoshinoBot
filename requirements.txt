@@ -22,3 +22,4 @@ arrow
 peewee
 expiringdict
 html2text
+peony-twitter[all]~=1.1.7
