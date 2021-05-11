@@ -169,6 +169,8 @@ def get_boss_process(score, brief = False):
         return f'{lap+1}周目{current_boss+1}王 [{remain_hp // 10000}万/{boss_hp // 10000}万] {round(remain_hp * 100/ boss_hp, 2)}%'
 
 def format_clan_info(clan_info):
+    if clan_info["damage"] % 100000 == 0:
+        clan_info["damage"] = int(clan_info["damage"]/100000)
     msg = f'公会:{clan_info["clan_name"]}\n' \
         + f'会长:{clan_info["leader_name"]}\n' \
         + f'排名:{clan_info["rank"]}\n' \
