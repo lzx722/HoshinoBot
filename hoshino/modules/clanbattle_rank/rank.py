@@ -181,6 +181,8 @@ def format_clan_info(clan_info):
 compact_banner = f'{align("公会", 16)}会长\n{align("排名", 6)}{align("分数", 10)}进度'
 
 def format_compact_clan_info(clan_info):
+    if clan_info["damage"] % 100000 == 0:
+        clan_info["damage"] = int(clan_info["damage"]/100000)
     msg = '\n'
     if 'clan_name' in clan_info:
         msg += f'{clan_info["clan_name"]}　'
