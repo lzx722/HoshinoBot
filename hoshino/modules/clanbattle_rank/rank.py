@@ -171,6 +171,8 @@ def get_boss_process(score, brief = False):
 def format_clan_info(clan_info):
     if clan_info["damage"] % 100000 == 0:
         clan_info["damage"] = int(clan_info["damage"]/100000)
+    elif clan_info["damage"] % 10000 == 0:
+        clan_info["damage"] = int(clan_info["damage"]/10000)
     msg = f'公会:{clan_info["clan_name"]}\n' \
         + f'会长:{clan_info["leader_name"]}\n' \
         + f'排名:{clan_info["rank"]}\n' \
@@ -183,6 +185,8 @@ compact_banner = f'{align("公会", 16)}会长\n{align("排名", 6)}{align("分�
 def format_compact_clan_info(clan_info):
     if clan_info["damage"] % 100000 == 0:
         clan_info["damage"] = int(clan_info["damage"]/100000)
+    elif clan_info["damage"] % 10000 == 0:
+        clan_info["damage"] = int(clan_info["damage"]/10000)
     msg = '\n'
     if 'clan_name' in clan_info:
         msg += f'{clan_info["clan_name"]}　'
