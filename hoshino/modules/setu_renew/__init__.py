@@ -155,7 +155,7 @@ async def send_msg(msg_list, ev):
 			hoshino.logger.error('[ERROR]图片发送失败')
 			await hoshino.get_bot().send(ev, f'涩图太涩,发不出去力...')
 		await asyncio.sleep(1)
-		return list(range(1, len(msg_list)))
+		return list(range(len(msg_list)))
 
 
 @sv.on_prefix('setu')
@@ -219,7 +219,12 @@ async def send_setu(bot, ev):
 		for k, v in state.items():
 			msg += f'\n{k}源 : {v}张'
 	elif args[0] == "黑名单" and len(args) == 3:  # setu 黑名单 新增/删除 gid(一次只能提供一个)
-		mode = 0 if args[1] == "新增" else 1
+		if args[1] in ["新增", "添加"]:
+			mode = 0 
+		elif args[1] in ["删除", "移除"]:
+			mode = 1
+		else:
+			await bot.finish(ev,"操作错误，应为新增/删除其一")
 		group_id = args[2]
 		statuscode, failedgid = set_group_list(group_id, 1, mode)
 		if statuscode == 403:
@@ -231,7 +236,12 @@ async def send_setu(bot, ev):
 		else:
 			msg = f'成功{args[1]}群{group_id}'
 	elif args[0] == '白名单' and len(args) == 3:  # setu 白名单 新增/删除 gid(一次只能提供一个)
-		mode = 0 if args[1] == "新增" else 1
+		if args[1] in ["新增", "添加"]:
+			mode = 0
+		elif args[1] in ["删除", "移除"]:
+			mode = 1
+		else:
+			await bot.finish(ev, "操作错误，应为新增/删除其一")
 		group_id = args[2]
 		statuscode, failedgid = set_group_list(group_id, 0, mode)
 		if statuscode == 403:
@@ -247,7 +257,7 @@ async def send_setu(bot, ev):
 	await bot.send(ev, msg)
 
 
-@sv.on_rex(r'^[色涩瑟][图圖]|[来來发發给給]((?P<num>\d+)|(?:.*))[张張个個幅点點份丶](?P<keyword>.*?)[色涩瑟][图圖]$')
+@sv.on_rex(r'^[色涩瑟][图圖]$|^[来來发發给給]((?P<num>\d+)|(?:.*))[张張个個幅点點份丶](?P<keyword>.*?)[色涩瑟][图圖]$')
 async def send_search_setu(bot, ev):
 	uid = ev['user_id']
 	gid = ev['group_id']
@@ -386,7 +396,7 @@ async def get_spec_setu(bot, ev):
 		await bot.send(ev, 'p站id无效,应为8位数字id哦~')
 
 
-@sv.scheduled_job('interval', minutes=1000)
+@sv.scheduled_job('interval', minutes=10)
 async def fetch_setu_process():
 	await fetch_process()
 

@@ -122,8 +122,9 @@ async def download_image(url: str):
 				imgByteArr = io.BytesIO()
 				roiImg.save(imgByteArr, format='JPEG')
 				return imgByteArr.getvalue()
-	except:
-		hoshino.logger.error('[ERROR]download image failed')
+	except Exception as e:
+		hoshino.logger.error(
+            '[ERROR]download image {} failed,error {}'.format(url, e))
 	# traceback.print_exc()
 	return None
 
@@ -145,8 +146,9 @@ async def download_pixiv_image(url: str, id):
 				imgByteArr = io.BytesIO()
 				roiImg.save(imgByteArr, format='JPEG')
 				return imgByteArr.getvalue()
-	except:
-		hoshino.logger.error('[ERROR]download image failed')
+	except Exception as e:
+		hoshino.logger.error(
+            '[ERROR]download image {} failed,error {}'.format(url, e))
 	# traceback.print_exc()
 	return None
 
@@ -303,9 +305,10 @@ async def lolicon_fetch_process():
 	if get_config('lolicon', 'mode') == 2:
 		hoshino.logger.info('[INFO]fetch lolicon setu')
 		await get_setu_online(10, 0)
-		if get_config('lolicon', 'r18'):
-			hoshino.logger.info('[INFO]fetch lolicon r18 setu')
-			await get_setu_online(10, 1)
+		if not get_config('lolicon', 'r18') or not get_config('default', 'lolicon_r18'):
+			return
+		hoshino.logger.info('[INFO]fetch lolicon r18 setu')
+		await get_setu_online(10, 1)
 
 
 def lolicon_init():
@@ -315,25 +318,3 @@ def lolicon_init():
 		native_info = load_native_info('lolicon')
 		native_r18_info = load_native_info('lolicon_r18')
 
-
-'''
-class Lolicon:
-
-    def __init__(self):
-        pass
-
-    async def get_setu(self):
-        pass
-
-    async def search_setu(self):
-        pass
-
-    async def get_ranking(self):
-        pass
-
-    async def get_ranking_setu(self):
-        pass
-
-    async def fetch_process(self):
-        await lolicon_fetch_process()
-'''
