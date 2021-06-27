@@ -1,6 +1,7 @@
 import json
 import os
 import traceback
+import cn2an
 
 from nonebot import scheduler
 
@@ -257,14 +258,14 @@ async def send_setu(bot, ev):
 	await bot.send(ev, msg)
 
 
-@sv.on_rex(r'^[色涩瑟][图圖]$|^[来來发發给給]((?P<num>\d+)|(?:.*))[张張个個幅点點份丶](?P<keyword>.*?)[色涩瑟][图圖]$')
+@sv.on_rex(r'^[色涩瑟][图圖]$|^[来來发發给給]((?P<num>\S+)|(?:.*))[张張个個幅点點份丶](?P<keyword>.*?)[色涩瑟][图圖]$')
 async def send_search_setu(bot, ev):
 	uid = ev['user_id']
 	gid = ev['group_id']
 	num = ev['match'].group('num')
 	if num:
 		try:
-			num = int(num)
+			num = int(cn2an.cn2an(num, "smart"))
 			max_num = int(get_config('base', 'max_pic_once_send'))
 			if num > max_num:
 				await bot.send(ev, f'太贪心辣,一次只能要{max_num}份涩图哦~')
@@ -396,7 +397,7 @@ async def get_spec_setu(bot, ev):
 		await bot.send(ev, 'p站id无效,应为8位数字id哦~')
 
 
-@sv.scheduled_job('interval', minutes=10)
+@sv.scheduled_job('interval', minutes=1000)
 async def fetch_setu_process():
 	await fetch_process()
 
