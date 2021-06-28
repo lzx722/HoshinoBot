@@ -51,7 +51,7 @@ gacha_10_aliases = ('抽十连', '十连', '十连！', '十连抽', '来个十�
 gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋')
 gacha_300_aliases = ('抽一井', '来一井', '来发井', '抽发井', '天井扭蛋', '扭蛋天井')
 
-@sv.on_fullmatch(('卡池资讯', '查看卡池', '看看卡池', '康康卡池','看看up', '看看UP'))
+@sv.on_fullmatch('卡池资讯', '查看卡池', '看看卡池', '康康卡池', '看看up', '看看UP')
 async def gacha_info(bot, ev: CQEvent):
     gid = str(ev.group_id)
     gacha = Gacha(_group_pool[gid])
@@ -62,8 +62,8 @@ async def gacha_info(bot, ev: CQEvent):
     await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%\n")
 
 
-POOL_NAME_TIP = '请选择以下卡池\n> 选择卡池 jp\n> 选择卡池 tw\n> 选择卡池 bilibili\n> 选择卡池 fes\n> 选择卡池 七冠\n> 选择卡池 联动\n> 选择卡池 限定（现已全部实装）\n> 选择卡池 mix'
-@sv.on_prefix(('切换卡池', '选择卡池'))
+POOL_NAME_TIP = '请选择以下卡池\n> 切换卡池jp\n> 切换卡池tw\n> 切换卡池b\n> 切换卡池mix'
+@sv.on_prefix('切换卡池', '选择卡池')
 async def set_pool(bot, ev: CQEvent):
     #if not priv.check_priv(ev, priv.ADMIN):
     #    await bot.finish(ev, '只有群管理才能切换卡池', at_sender=True)

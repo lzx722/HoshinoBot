@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 import hoshino
 from hoshino import Service, R
 from hoshino.typing import *
-from hoshino.util import FreqLimiter, concat_pic, pic2b64, silence
+from hoshino.util import FreqLimiter, concat_pic, pic2b64, silence, filt_message
 
 from .. import chara
 
@@ -101,6 +101,7 @@ async def _arena_query(bot, ev: CQEvent, region: int):
         _, name, score = chara.guess_id(unknown)
         if score < 70 and not defen:
             return  # 忽略无关对话
+        unknown = filt_message(unknown)
         msg = f'无法识别"{unknown}"' if score < 70 else f'无法识别"{unknown}" 您说的有{score}%可能是{name}'
         await bot.finish(ev, msg)
     if not defen:
@@ -154,13 +155,14 @@ async def _arena_query(bot, ev: CQEvent, region: int):
     #     "你赞过" if e['user_like'] > 0 else "你踩过" if e['user_like'] < 0 else ""
     # ]) for e in res]
 
-    # defen = [ chara.fromid(x).name for x in defen ]
-    # defen = f"防守方【{' '.join(defen)}】"
+    defen = [ chara.fromid(x).name for x in defen ]
+    defen = f"防守方【{' '.join(defen)}】"
     at = str(MessageSegment.at(ev.user_id))
 
     msg = [
-        # defen,
-        f'已为骑士君{at}查询到以下进攻方案：',
+        defen,
+        # at,
+        f'已为骑士{at}查询到以下进攻方案：',
         str(teams),
         # '作业评价：',
         # *details,
