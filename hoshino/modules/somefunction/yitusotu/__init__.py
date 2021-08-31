@@ -14,7 +14,7 @@ sv = Service('picfinder', help_='''
 [识图+图片] 查询图片来源
 '''.strip())
 
-api_key = config.yitusotu.apikey.API_KEY
+api_key = config.somefunction.apikey.YITUSOTU_API_KEY
 EnableRename=False
 minsim='80!'#相似度下限，低于下限不显示结果(80!指80%)
 thumbSize = (250,250)
