@@ -1,2 +1,0 @@
-MIKAN_TOKEN = ""
-# 请读README
