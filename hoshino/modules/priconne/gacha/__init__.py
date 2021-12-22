@@ -211,7 +211,7 @@ async def gacha_10(bot, ev: CQEvent):
     #await silence(ev, silence_time)
 
 
-@sv.on_prefix(gacha_300_aliases, only_to_me=True)
+@sv.on_prefix(gacha_300_aliases, only_to_me=False)
 async def gacha_300(bot, ev: CQEvent):
 
     await check_tenjo_num(bot, ev)
