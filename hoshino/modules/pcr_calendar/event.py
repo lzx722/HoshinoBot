@@ -4,8 +4,10 @@ import datetime
 import aiohttp
 import asyncio
 import math
+from .bilibili_calendar import transform_bilibili_calendar
+from .gamewith_calendar import transform_gamewith_calendar
 
-# type 0普通 1双倍 2 公会战 3 活动
+# type 0普通 1 活动 2双倍 3 公会战
 
 event_data = {
     'cn': [],
@@ -33,6 +35,30 @@ async def query_data(url):
     except:
         pass
     return None
+
+async def load_event_bilibili():
+    data = ''
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://static.biligame.com/pcr/gw/calendar.js') as resp:
+                data = await resp.text('utf-8')
+                data = transform_bilibili_calendar(data)
+    except:
+        print('解析B站日程表失败')
+        return 1
+    if data:
+        event_data['cn'] = []
+        for item in data:
+            start_time = datetime.datetime.strptime(item['start'], r"%Y/%m/%d %H:%M")
+            end_time = datetime.datetime.strptime(item['end'], r"%Y/%m/%d %H:%M")
+            event = {'title': item['title'], 'start': start_time, 'end': end_time, 'type': 1}
+            if '倍' in event['title']:
+                event['type'] = 2
+            elif '团队战' in event['title']:
+                event['type'] = 3
+            event_data['cn'].append(event)
+        return 0
+    return 1
 
 async def load_event_cn():
     data = await query_data('https://mahomaho-insight.info/cached/gameevents.json')
@@ -82,13 +108,33 @@ async def load_event_jp():
         return 0
     return 1
 
+async def load_event_gamewith():
+    data = ''
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://gamewith.jp/pricone-re/') as resp:
+                data = await resp.text('utf-8')
+                data = transform_gamewith_calendar(data)
+    except:
+        print('解析gamewith日程表失败')
+        return 1
+    if data:
+        event_data['jp'] = []
+        for item in data:
+            start_time = datetime.datetime.strptime(item['start_time'], r'%Y/%m/%d %H:%M:%S')
+            end_time = datetime.datetime.strptime(item['end_time'], r'%Y/%m/%d %H:%M:%S')
+            event = {'title': item['name'], 'start': start_time, 'end': end_time, 'type': item['type']}
+            event_data['jp'].append(event)
+        return 0
+    return 1
+
 async def load_event(server):
     if server == 'cn':
-        return await load_event_cn()
+        return await load_event_bilibili()
     elif server == 'tw':
         return await load_event_tw()
     elif server == 'jp':
-        return await load_event_jp()
+        return await load_event_gamewith()
     return 1
 
 def get_pcr_now(offset):
@@ -131,8 +177,7 @@ async def get_events(server, offset, days):
 
 if __name__=='__main__':
     async def main():
-        await load_event_cn()
-        events = await get_events('jp', 0, 1)
+        events = await get_events('cn', 0, 1)
         for event in events:
             print(event)
 
