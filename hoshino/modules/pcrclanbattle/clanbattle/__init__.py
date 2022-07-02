@@ -103,7 +103,7 @@ QUICK_START = f'''
 ※使用前请务必【逐字】阅读开头的必读事项
 '''.rstrip()
 
-@on_command('!帮助', aliases=('！帮助', '!help', '！help'), only_to_me=False)
+@on_command('!帮助', aliases=('！帮助', '!幫助', '！幫助', '!help', '！help'), only_to_me=False)
 async def cb_help(session:CommandSession):
     await session.send(QUICK_START, at_sender=True)
     msg = MessageSegment.share(url='https://github.com/Ice-Cirno/HoshinoBot/wiki/%E4%BC%9A%E6%88%98%E7%AE%A1%E7%90%86v2',

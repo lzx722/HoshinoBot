@@ -20,7 +20,7 @@ def get_support_rank(t: datetime, server):
     return rank
 
 
-#@sv.on_rex(r'^(\*?([日台国陆b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$')
+@sv.on_rex(r'^(\*?([日台国陆b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$')
 async def rank_sheet(bot, ev):
     match = ev['match']
     is_jp = match.group(2) == '日'
@@ -45,7 +45,7 @@ async def rank_sheet(bot, ev):
 
 @sv.on_fullmatch('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'jjc数据库')
 async def say_arina_database(bot, ev):
-    await bot.send(ev, f'公主连接Re:Dive 竞技场编成数据库\n中文：https://pcrdfans.com/battle\n日文：https://nomae.net/arenadb')
+    await bot.send(ev, '公主连接Re:Dive 竞技场编成数据库\n日文：https://nomae.net/arenadb \n中文：https://pcrdfans.com/battle')
 
 
 OTHER_KEYWORDS = '【日rank】【台rank】【b服rank】【jjc作业网】【黄骑充电表】【一个顶俩】'
