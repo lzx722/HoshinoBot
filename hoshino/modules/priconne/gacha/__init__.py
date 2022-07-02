@@ -49,7 +49,7 @@ def dump_pool_config():
 gacha_10_aliases = ('抽十连', '十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '抽个十连', '抽发十连', '抽次十连', '十连扭蛋', '扭蛋十连',
                     '10连', '10连！', '10连抽', '来个10连')
 gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋')
-gacha_300_aliases = ('抽一井', '来一井', '来发井', '抽发井', '天井扭蛋', '扭蛋天井')
+gacha_tenjou_aliases = ('抽一井', '来一井', '来发井', '抽发井', '天井扭蛋', '扭蛋天井')
 
 @sv.on_fullmatch('卡池资讯', '查看卡池', '看看卡池', '康康卡池', '看看up', '看看UP')
 async def gacha_info(bot, ev: CQEvent):
@@ -158,7 +158,7 @@ async def check_jewel_num(bot, ev: CQEvent):
         await bot.finish(ev, JEWEL_EXCEED_NOTICE, at_sender=True)
 
 
-async def check_tenjo_num(bot, ev: CQEvent):
+async def check_tenjou_num(bot, ev: CQEvent):
     if not tenjo_limit.check(ev.user_id):
         await bot.finish(ev, TENJO_EXCEED_NOTICE, at_sender=True)
 
@@ -194,8 +194,8 @@ async def gacha_10(bot, ev: CQEvent):
     # silence_time = hiishi * 6 if hiishi < SUPER_LUCKY_LINE else hiishi * 60
 
 
-    res1 = chara.gen_team_pic(result[:5], star_slot_verbose=False)
-    res2 = chara.gen_team_pic(result[5:], star_slot_verbose=False)
+    res1 = await chara.gen_team_pic(result[:5], star_slot_verbose=False)
+    res2 = await chara.gen_team_pic(result[5:], star_slot_verbose=False)
     res = concat_pic([res1, res2])
     res = pic2b64(res)
     res = MessageSegment.image(res)
@@ -214,7 +214,7 @@ async def gacha_10(bot, ev: CQEvent):
 @sv.on_prefix(gacha_300_aliases, only_to_me=False)
 async def gacha_300(bot, ev: CQEvent):
 
-    await check_tenjo_num(bot, ev)
+    await check_tenjou_num(bot, ev)
     tenjo_limit.increase(ev.user_id)
 
     gid = str(ev.group_id)
@@ -235,7 +235,7 @@ async def gacha_300(bot, ev: CQEvent):
         pics = []
         for i in range(0, lenth, step):
             j = min(lenth, i + step)
-            pics.append(chara.gen_team_pic(res[i:j], star_slot_verbose=False))
+            pics.append(await chara.gen_team_pic(res[i:j], star_slot_verbose=False))
         res = concat_pic(pics)
         res = pic2b64(res)
         res = MessageSegment.image(res)
@@ -243,7 +243,7 @@ async def gacha_300(bot, ev: CQEvent):
     msg = [
         f"\n素敵な仲間が増えますよ！ {res}",
         f"★★★×{up+s3} ★★×{s2} ★×{s1}",
-        f"获得记忆碎片×{100*up}与女神秘石×{50*(up+s3) + 10*s2 + s1}！\n第{result['first_up_pos']}抽首次获得up角色" if up else f"获得女神秘石{50*(up+s3) + 10*s2 + s1}个！"
+        f"获得记忆碎片×{gacha.memo_pieces*up}与女神秘石×{50*(up+s3) + 10*s2 + s1}！\n第{result['first_up_pos']}抽首次获得up角色" if up else f"获得女神秘石{50*(up+s3) + 10*s2 + s1}个！"
     ]
 
     if up == 0 and s3 == 0:
@@ -253,15 +253,15 @@ async def gacha_300(bot, ev: CQEvent):
     elif up == 0 and s3 <= 3:
         msg.append("这位酋长，梦幻包考虑一下？")
     elif up == 0:
-        msg.append("据说天井的概率只有12.16%")
+        msg.append("据说天井的概率只有" + gacha.tenjou_rate)
     elif up <= 2:
         if result['first_up_pos'] < 50:
             msg.append("你的喜悦我收到了，滚去喂鲨鱼吧！")
         elif result['first_up_pos'] < 100:
             msg.append("已经可以了，您已经很欧了")
-        elif result['first_up_pos'] > 290:
+        elif result['first_up_pos'] > gacha.tenjou_line - 10:
             msg.append("标 准 结 局")
-        elif result['first_up_pos'] > 250:
+        elif result['first_up_pos'] > gacha.tenjou_line - 50:
             msg.append("补井还是不补井，这是一个问题...")
         else:
             msg.append("期望之内，亚洲水平")

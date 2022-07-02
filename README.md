@@ -112,16 +112,16 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
 
 **由于酷Q已停止运营，您可以使用[go-cqhttp](https://github.com/Mrs4s/go-cqhttp)或[CQHTTP Mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)作为无头QQ客户端。**
 
-旧文档已失效（新文档正在编写中...），请参考由 [pcrbot 社区](https://github.com/pcrbot)提供的部署指南：
+<details>
+  <summary>（点击查看社区提供的部署指南）</summary>
+> CentOS已停止更新，推荐使用Ubuntu 20.04或Debian。
 
-- 《[Linux 下部署一个公主连结 qq 群聊机器人](https://cn.pcrbot.com/deploy-a-priconne-bot-on-linux/)》作者：[地河君_official](https://github.com/Chendihe4975)
-- 《[Windows 给新人的简易部署指南](https://github.com/Soung2279/Mirai-Bot-Setup)》作者：[SYoung](https://github.com/Soung2279)
+
 - 《[使用 Docker 部署 HoshinoBot 与 yobot](https://cn.pcrbot.com/depoly-with-docker/)》作者：[yuudi](https://github.com/yuudi)
 
-<details>
-  <summary>（点击查看旧文档）</summary>
+</details>
 
-本bot功能繁多，部分功能需要静态图片资源和带有认证的api key，恕不能公开。本指南将首先带领您搭建具有**模拟抽卡(纯文字版)**、**会战管理**功能的HoshinoBot。其他功能需额外配置，请参考本章**更进一步**的对应小节。
+本bot功能繁多，部分功能需要静态图片资源和带有认证的api key，恕不能公开。本指南将首先带领您搭建具有**模拟抽卡(纯文字版)**、**会战管理v2**功能的HoshinoBot。其他功能需额外配置，请参考本章**更进一步**的对应小节。适用于日台服的**会战管理v3及v4版本**暂未开源，如有需要请前往[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoのお茶会-brightgreen)](https://jq.qq.com/?_wv=1027&k=eYGgrL4A)。
 
 ### 部署步骤
 
@@ -132,31 +132,9 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
     - Git：https://git-scm.com/download/win
     - Notepad++：https://notepad-plus-plus.org/downloads/
 
-2. 安装 酷Q 及 CQHTTP 插件
+2. 打开一个合适的文件夹，点击资源管理器左上角的 `文件 -> 打开Windows Powershell`
 
-    - 酷Q Air：https://cqp.cc/t/23253 （如无法打开，使用此下载直链：https://dlsec.cqp.me/cqa-full）
-    - CQHTTP 插件：https://github.com/richardchien/coolq-http-api/releases
-
-    > 初次部署建议先在本地尝试，酷Q Air版即可，待部署成功后再尝试服务器搭建与酷Q Pro版
-
-3. 运行 酷Q，启用 CQHTTP插件，修改CQHTTP插件的配置文件，下面的配置可供参考：
-
-    ```json
-    {
-        "use_http": false,
-        "use_ws": false,
-        "use_ws_reverse": true,
-        "ws_reverse_use_universal_client": true,
-        "ws_reverse_url": "ws://127.0.0.1:8080/ws/",
-        "serve_data_files": false
-    }
-    ```
-
-    关于CQHTTP插件的配置说明，详见 [CQHTTP 文档 -> 配置](https://cqhttp.cc/docs/#/Configuration)
-
-4. 打开一个合适的文件夹，点击资源管理器左上角的 `文件 -> 打开Windows Powershell`
-
-5. 输入以下命令克隆本仓库并安装依赖
+3. 输入以下命令克隆本仓库并安装依赖
 
     ```powershell
     git clone https://github.com/Ice-Cirno/HoshinoBot.git
@@ -167,71 +145,83 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
     >
     >若安装python依赖库时下载速度缓慢，可以尝试使用`py -3.8 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt`
 
-6. 回到资源管理器，进入`hoshino`文件夹，将`config_example`文件夹重命名为`config`，然后右键使用Notepad++打开其中的`__bot__.py`，按照其中的注释说明进行编辑。
+4. 回到资源管理器，进入`hoshino`文件夹，将`config_example`文件夹复制一份，重命名为`config`，然后右键使用Notepad++打开其中的`__bot__.py`，按照其中的注释说明进行编辑。
 
-    > 如果您不清楚某项设置的作用，请保持默认
-    
-7. 回到powershell，启动 Hoshino
+    > 如果您不清楚某项设置的作用，请保持默认。
+
+5. 回到powershell，输入以下命令，启动 HoshinoBot
 
     ```powershell
     py -3.8 run.py
     ```
 
-    私聊机器人发送`在？`，若机器人有回复，恭喜您！您已经成功搭建起HoshinoBot了。之后您可以尝试在群内发送`!帮助`以查看会战管理的相关说明，发送`help`查看其他一般功能的相关说明，发送`pcr速查`查看常用网址等。
+    > 若能看到日志`INFO: Running on 127.0.0.1:8080`，说明HoshinoBot启动成功。您可以忽略启动时的WARNING信息。如果出现ERROR，说明部分功能可能加载失败。
 
+    至此，HoshinoBot的“大脑”已部署成功。接下来我们需要部署无头qq客户端，作为HoshinoBot的“口”和“耳”，收发消息。
+
+6. 下载 go-cqhttp 至合适的文件夹
+
+    - github 发布页：https://github.com/Mrs4s/go-cqhttp/releases
+
+    > 您需要根据自己的机器架构选择版本，Windows一般为x86/64架构，通常选择[go-cqhttp_windows_386.exe](https://github.com/Mrs4s/go-cqhttp/releases/download/v1.0.0-rc1/go-cqhttp_windows_386.exe)
+
+7. 在同文件夹内创建一个文本文件，重命名为`config.yml`，将以下内容写入文件：
+
+    ```yaml
+    account:
+      uin: 你的机器人QQ号
+      password: '' # 密码为空时使用扫码登录
+      encrypt: false  # 是否开启密码加密
+    heartbeat:
+      interval: 5
+    default-middlewares: &default
+      access-token: ''
+    database:
+      leveldb:
+        enable: true
+    servers:
+      - ws-reverse:
+          universal: ws://127.0.0.1:8080/ws/
+          reconnect-interval: 5000
+          middlewares:
+            <<: *default
+    ```
+
+    > 你需要在资源管理器上方菜单 -> 查看 -> 显示/隐藏 中勾选"文件扩展名"，以修改文件的后缀名。
+    
+    将其中的“你的机器人QQ号”替换为实际的QQ号，通常为8~11位纯数字。密码留空使用扫码登录，你也可以将密码写入配置文件，此时请妥善保存您的配置文件，不要泄露给其他人。
+    
+    > 关于go-cqhttp的配置，你可以在[这里](https://docs.go-cqhttp.org/guide/config.html#%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF)找到更多说明。
+
+8. 启动go-cqhttp，按照提示登录。
+
+    登陆成功后，私聊机器人发送`在？`，若机器人有回复，恭喜您，您已经成功搭建起HoshinoBot了！
+
+    之后您可以尝试在群内发送`!帮助`以查看会战管理的相关说明，发送`help`查看其他一般功能的相关说明，发送`pcr速查`查看常用网址等。
+    
     注意，此时您的机器人功能还不完全，部分功能可能无法正常工作。若希望您的机器人可以发送图片，或使用其他进阶功能，请参考本章**更进一步**的对应小节。
-
-
 
 
 
 #### Linux 部署
 
-由于 酷Q 仅支持 Windows 环境，我们需要使用 docker 镜像来部署 酷Q 及 CQHTTP 插件。但别担心，相信我，这比 Windows 下部署更简单！您可以在[这个文档](https://cqhttp.cc/docs/)找到详细的说明。下面将带领您进行部署：
+> CentOS已停止更新，推荐使用Ubuntu 20.04或Debian。
 
-1. 安装 docker：参考https://docs.docker.com/engine/install/debian/
-
-2. 部署 docker：下面一条命令仅供参考，请根据实际情况修改参数；详细说明可见 [CQHTTP 文档 -> Docker](https://cqhttp.cc/docs/#/Docker)
-
-    ```bash
-    sudo docker run -d --name=hoshino \
-    -v $(pwd)/coolq:/home/user/coolq \
-    -p 9000:9000 \
-    -e VNC_PASSWD=MAXchar8 \
-    -e COOLQ_ACCOUNT=10000 \
-    -e COOLQ_URL=https://dlsec.cqp.me/cqp-full \
-    -e CQHTTP_SERVE_DATA_FILES=no \
-    -e CQHTTP_USE_HTTP=no \
-    -e CQHTTP_USE_WS_REVERSE=yes \
-    -e CQHTTP_WS_REVERSE_URL=ws://172.17.0.1:8080/ws/ \
-    -e CQHTTP_WS_REVERSE_USE_UNIVERSAL_CLIENT=yes \
-    richardchien/cqhttp:latest
-    ```
-
-    > 使用这行命令`ip addr show docker0 | grep -Po 'inet \K[\d.]+'`查看你的docker桥ip，替换`CQHTTP_WS_REVERSE_URL`中的链接
-    >
-    > 然后访问 `http://<你的IP>:9000/` 进入 noVNC（默认密码 `MAXchar8`），登录 酷Q
-    > 
-    > 注：如果你希望先使用酷Q Air进行尝试，请将COOLQ_URL设置为`https://dlsec.cqp.me/cqa-xiaoi`；之后可以用CQP.exe替换CQA.exe以升级，或删除容器重新创建。
-
-3. 回到我们熟悉的命令行，安装 Python 3.8
+1. 安装 Python 3.8
 
     ```bash
     # Ubuntu or Debian
     sudo apt install python3.8
     ```
-    > 若您的包管理工具（如`yum`）尚不支持`python3.8`，你可以尝试从源码安装。  
-    >
-    > Google will help you greatly : )
 
-4. 克隆本仓库并安装依赖包
+2. 克隆本仓库并安装依赖包
     ```bash
     git clone https://github.com/Ice-Cirno/HoshinoBot.git
     cd HoshinoBot
     python3.8 -m pip install -r requirements.txt
     ```
 
-5. 编辑配置文件
+3. 编辑配置文件
     ```bash
     mv hoshino/config_example hoshino/config
     nano hoshino/config/__bot__.py
@@ -239,17 +229,51 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
     > 配置文件内有相应注释，请根据您的实际配置填写，HoshinoBot仅支持反向ws通信
     >
     > 您也可以使用`vim`编辑器，若您从未使用过，我推荐您使用 `nano` : )
-6. 运行bot
+
+4. 运行HoshinoBot
     ```bash
     python3.8 run.py
     ```
-    
-    私聊机器人发送`在？`，若机器人有回复，恭喜您！您已经成功搭建起HoshinoBot了。之后您可以尝试在群内发送`!帮助`以查看会战管理的相关说明，发送`help`查看其他一般功能的相关说明，发送`pcr速查`查看常用网址等。
-    
+
+    > 你需要在tmux或screen中运行。
+
+5. 下载 go-cqhttp 至合适的文件夹
+
+    - github 发布页：https://github.com/Mrs4s/go-cqhttp/releases
+
+    > 您需要根据自己的机器架构选择版本，一般x86/64的Linux选择[go-cqhttp_linux_386.tar.gz](https://github.com/Mrs4s/go-cqhttp/releases/download/v1.0.0-rc1/go-cqhttp_linux_386.tar.gz)
+
+6. 解压后，在`go-cqhttp`的同目录下创建配置文件`config.yml`，将以下内容写入文件：
+
+    ```yaml
+    account:
+      uin: 你的机器人QQ号
+      password: '' # 密码为空时使用扫码登录
+      encrypt: false  # 是否开启密码加密
+    heartbeat:
+      interval: 5
+    default-middlewares: &default
+      access-token: ''
+    database:
+      leveldb:
+        enable: true
+    servers:
+      - ws-reverse:
+          universal: ws://127.0.0.1:8080/ws/
+          reconnect-interval: 5000
+          middlewares:
+            <<: *default
+    ```
+
+    将其中的“你的机器人QQ号”替换为实际的QQ号，通常为8~11位纯数字。密码留空使用扫码登录，你也可以将密码写入配置文件，此时请妥善保存您的配置文件，不要泄露给其他人。
+
+    > 关于go-cqhttp的配置，你可以在[这里](https://docs.go-cqhttp.org/guide/config.html#%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF)找到更多说明。
+
+7. 运行`go-cqhttp`，按照提示登录。
+
+    登陆成功后，私聊机器人发送`在？`，若机器人有回复，恭喜您！您已经成功搭建起HoshinoBot了。之后您可以尝试在群内发送`!帮助`以查看会战管理的相关说明，发送`help`查看其他一般功能的相关说明，发送`pcr速查`查看常用网址等。
+
     注意，此时您的机器人功能还不完全，部分功能可能无法正常工作。若希望您的机器人可以发送图片，或使用其他进阶功能，请参考本章**更进一步**的对应小节。
-
-
-</details>
 
 ### 更进一步
 
@@ -261,18 +285,13 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
 
 #### 静态图片资源
 
-> 发送图片的条件：  
-> 1. 静态图片资源
+您可能希望看到更为精致的图片版结果，若希望机器人能够发送图片，需要准备静态图片资源，其中包括：
 
-您可能希望看到更为精致的图片版结果，若希望机器人能够发送图片，首先需要您购买酷Q Pro版，其次需要准备静态图片资源，其中包括：
-
-- 公主连接角色头像（来自 [干炸里脊资源站](https://redive.estertion.win/) 的拆包）
 - 公主连接官方四格漫画
 - 公主连接每月rank推荐表
 - 表情包杂图
 - setu库
 - [是谁呼叫舰队](http://fleet.diablohu.com/)舰娘&装备页面截图
-- 艦これ人事表
 
 等资源。自行收集可能较为困难，所以我们准备了一个较为精简的资源包以及下载脚本，可以满足公主连接相关功能的日常使用。如果需要，请加入QQ群 **Hoshino的后花园** 367501912，下载群文件中的`res.zip`。
 
@@ -337,14 +356,6 @@ consumer_secret = "your_consumer_secret",
 access_token_key = "your_access_token_key",
 access_token_secret = "your_access_token_secret"
 ```
-
-
-
-#### 晴乃词库
-
-舰娘及装备查询功能使用了精简版的晴乃词库，如有需要请加 Hoshino的后花园（群号367501912）或联系晴乃维护组。
-
-
 
 
 
