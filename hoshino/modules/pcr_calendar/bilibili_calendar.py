@@ -30,7 +30,7 @@ class ContentParse(HTMLParser):
         self.is_title = False
 
     def handle_starttag(self, tag, attrs):
-        if 'cl-t' in attrs[0]:
+        if len(attrs) != 0 and 'cl-t' in attrs[0]:
             self.is_title = True
         else:
             self.is_title = False

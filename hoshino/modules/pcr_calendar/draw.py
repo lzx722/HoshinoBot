@@ -2,10 +2,11 @@ from PIL import Image, ImageDraw, ImageFont
 from .event import *
 import os
 
-font_path = os.path.join(os.path.dirname(__file__), 'wqy-microhei.ttc')
-font = ImageFont.truetype(font_path, 20)
+item_height = 45
 
-width = 500
+font_path = os.path.join(os.path.dirname(__file__), 'wqy-microhei.ttc')
+font = ImageFont.truetype(font_path, int(item_height * 0.67))
+
 
 color = [
     {'front': 'black', 'back': 'white'},
@@ -14,9 +15,10 @@ color = [
     {'front': 'white', 'back': 'BlueViolet'},
 ]
 
-def create_image(item_number):
-    height = item_number * 30
-    im = Image.new('RGBA', (width, height), (255, 255, 255, 0))
+def create_image(item_number, title_len):
+    width = int(item_height * title_len * 0.7)
+    height = item_number * item_height
+    im = Image.new('RGBA', (width, height), (255, 255, 255, 255))
     return im
 
 def draw_rec(im, color, x, y, w, h, r):
@@ -45,15 +47,14 @@ def draw_item(im, n, t, text, days):
     if t >= len(color):
         t = 1
     x = 0
-    y = n * 30
-    height = 28
+    y = n * item_height
 
-    draw_rec(im, color[t]['back'], x, y, width, height, 6)
+    width = im.width
+    height = int(item_height * 0.95)
 
-    im1 = Image.new('RGBA', (width - 120, 28), (255, 255, 255, 0))
-    draw_text(im1, 0, 0, width, height, text, 1, color[t]['front'])
-    _, _, _, a = im1.split()
-    im.paste(im1, (x, y), mask=a)
+    draw_rec(im, color[t]['back'], x, y, width, height, int(item_height * 0.1))
+
+    draw_text(im, x, y, width, height, text, 1, color[t]['front'])
 
     if days > 0:
 
@@ -66,25 +67,16 @@ def draw_item(im, n, t, text, days):
 
 def draw_title(im, n, left = None, middle = None, right = None):
     x = 0
-    y = n * 30
-    height = 28
+    y = n * item_height
+    width = im.width
+    height = int(item_height * 0.95)
 
-    draw_rec(im, color[0]['back'], x, y, width, height, 6)
+
+    draw_rec(im, color[0]['back'], x, y, width, height, int(item_height * 0.1))
     if middle:
         draw_text(im, x, y, width, height, middle, 0, color[0]['front'])
     if left:
         draw_text(im, x, y, width, height, left, 1, color[0]['front'])
     if right:
         draw_text(im, x, y, width, height, right, 2, color[0]['front'])
-
-def draw_title1(im, n, day_list):
-    x = 0
-    y = n * 30
-    height = 28
-    color = 'black'
-
-    n = len(day_list)
-    for i in range(n):
-        x = width / n * i
-        draw_text(im, x, y, width, height, day_list[i], 1, color)
 

@@ -22,13 +22,15 @@ async def generate_day_schedule(server = 'cn'):
     events = await get_events(server, 0, 7)
 
     has_prediction = False
+    title_len = 25
     for event in events:
         if event['start_days'] > 0:
             has_prediction = True
+        title_len = max(title_len, len(event['title']) + 5)
     if has_prediction:
-        im = create_image(len(events) + 2)
+        im = create_image(len(events) + 2, title_len)
     else:
-        im = create_image(len(events) + 1)
+        im = create_image(len(events) + 1, title_len)
 
     title = f'公主连结{server_name[server]}活动'
     pcr_now = get_pcr_now(0)

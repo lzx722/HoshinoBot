@@ -11,6 +11,8 @@
 
 ## 更新日志
 
+22-03-21    v1.4.1  全部改为异步进行，[issue #6](https://github.com/azmiao/github_reminder/issues/6)
+
 21-11-09    v1.4    跟随github源码更新修复一个小bug，(github居然偷偷改源码了23333)
 
 21-09-14    v1.3    修复string中含有其他代码引发的报错(issue #1),并增加了查仓库issue编号的判断
@@ -41,7 +43,7 @@ https://github.com/azmiao/github_reminder
 
 [监控仓库 仓库链接] 监控该仓库，推送功能需另外开启
 
-[不要监控 仓库链接] 不再监控该仓库
+[不要监控仓库 仓库链接] 不再监控该仓库
 
 [查询监控仓库] 查询自己监控的仓库列表
 
@@ -66,10 +68,34 @@ https://www.594594.xyz/2021/08/23/github_reminder_for_hoshino/
     git clone https://github.com/azmiao/github_reminder
     ```
 
-2. 安装依赖，如下载过慢请自行换源
+2. 设置代理（由于现在fastgit镜像站也炸了，所以建议代理稍微稳一点）
 
+    默认不启用代理！
+
+    打开 `account.json`：（默认状态）
     ```
-    pip install pyyaml
+    {
+        "proxy": {}
+    }
+    ```
+
+    如果您的服务器在国内，那建议开启代理：
+
+    打开 `account.json`：（开启代理状态）
+
+    其中 1081 为代理的端口号，请自行查找你的代理的端口号并替换上
+    ```
+    {
+        "proxy": {
+            "http": "http://localhost:1081",
+            "https": "http://localhost:1081"
+        }
+    }
+    ```
+
+2. 安装依赖，到HoshinoBot\hoshino\modules\github_reminder目录下，管理员方式打开powershell
+    ```
+    pip install -r requirements.txt -i http://mirrors.aliyun.com/pypi/simple
     ```
 
 3. 在 HoshinoBot\hoshino\config\ `__bot__.py` 文件的 MODULES_ON 加入 'github_reminder'
