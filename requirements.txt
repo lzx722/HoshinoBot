@@ -40,4 +40,6 @@ sqlitedict
 APScheduler~=3.6
 opencc-python-reimplemented~=0.1.5
 quart
-
+CairoSVG
+urwid==2.1.2
+loguru

@@ -1,3 +1,5 @@
+2022.07.02：
+
 绝大部分功能正常的话都不更新了：
 clanbattle：公会战相关，有查公会排名段的rank，出会战报告的report
 calendar：日历功能，一共有“原神日历”和“日历（pcr）”
@@ -11,7 +13,7 @@ setu_renew：涩图功能，更新了也不一定能用上
 少部分例外：
 github_reminder：git仓库追踪，作者还在努力
 pcrjjc2：击剑专用
-
+bili-notice-hoshino：bili动态监视器
 
 有一些没弄懂：
 picfinder
