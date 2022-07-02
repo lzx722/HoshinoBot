@@ -9,7 +9,7 @@ db.json
 database.json
 *.db
 *.sqlite
-res/
+/res/
 img/
 imgs/
 image/
