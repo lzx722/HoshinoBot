@@ -3,26 +3,16 @@ from loguru import logger as log
 from math import ceil
 from os.path import dirname, join, exists
 from PIL import Image,ImageFont,ImageDraw,ImageFilter
+import configparser as cfg
 
-from .getImg import get_ico, get_Image, round_mask
+from .getImg import get_ico, get_Image, save_Image
 
 curpath = dirname(__file__)
-# Init log system
-def initlog():
-    path_log = join(dirname(__file__), "../log/")
-    if not exists(path_log):
-        os.mkdir(path_log)
-    log.add(
-        path_log+'{time:YYYY-MM-DD}.log',
-        level="DEBUG",
-        rotation="04:00",
-        retention="7 days",
-        backtrace=False,
-        enqueue=True,
-        diagnose=False,              # 调试，生产请改为False
-        format='{time:MM-DD HH:mm:ss} [{level}]\t{module}.{function}({line}): {message}'
-    )
-
+# 读取配置文件
+conf = cfg.ConfigParser()
+conf.read(join(curpath, '../config.ini'), encoding='utf-8')
+# comcfg = conf.items('common')
+# drawcfg = conf.items('drawCard')
 
 # 生成动态卡片的具体代码
 # 各个程序，传入参数为json代码和子卡片标志
@@ -43,40 +33,28 @@ class Card(object):
         self.nickname=self.latest["desc"]["user_profile"]["info"]["uname"]
         self.uid   = self.latest["desc"]["user_profile"]["info"]["uid"]
         card_content= self.latest["card"]
-        while True:
-            if card_content.count('\\\\"') >= 1 or card_content.count('\\\\/') >= 1:
-                card_content = card_content.replace('\\\\','\\')
-                
-            else:
-                # 升级为正则替换
-                card_content = re.sub(r'\\+\/', '/', card_content)
-                # card_content = re.sub(r'\\+\"', '"', card_content)
-                # :"",
-                card_content = re.sub(r'\\+\" ?\:', '":', card_content)
-                card_content = re.sub(r'\: ?\\+\"', ':"', card_content)
-                card_content = re.sub(r'\\+\" ?\,', '",', card_content)
-                card_content = re.sub(r'\, ?\\+\"', ',"', card_content)
-                # [""]
-                card_content = re.sub(r'\[ ?\\+\"', '["', card_content)
-                card_content = re.sub(r'\\+\" ?\]', '"]', card_content)
-                # {""}
-                card_content = re.sub(r'\{ ?\\+\"', '{"', card_content)
-                card_content = re.sub(r'\\+\" ?\}', '"}', card_content)
 
-                card_content = re.sub(r'\" ?\{', '{', card_content)
-                card_content = re.sub(r'\} ?\"', '}', card_content)
-                card_content = re.sub(r'\} ?\]\"', '} ]', card_content)
-                card_content = re.sub(r'\"\[ ?\{', '[ {', card_content)
-                # print(card_content)
-                log.trace(f'card detail content = {card_content}')
-                break
         try:
-            self.card=json.loads(card_content)
+            self.card = json.loads(card_content)
+            if self.card.get("item"):
+                if self.card["item"].get("at_control"):
+                    self.card["item"]["at_control"] = json.loads(self.card["item"]["at_control"])
+                if self.card["item"].get("ctrl"):
+                    self.card["item"]["ctrl"] = json.loads(self.card["item"]["ctrl"])
+            if(self.dytype == 1):
+                self.card["origin"] = json.loads(self.card["origin"])
+                self.card["origin_extend_json"] = json.loads(self.card["origin_extend_json"])
+                if self.card["origin"].get("item"):
+                    if self.card["origin"]["item"].get("at_control"):
+                        self.card["origin"]["item"]["at_control"] = json.loads(self.card["origin"]["item"]["at_control"])
+                    if self.card["origin"]["item"].get("ctrl"):
+                        self.card["origin"]["item"]["ctrl"] = json.loads(self.card["origin"]["item"]["ctrl"])
         except:
+            # if exists(join(curpath,'../log/')
             print('Error while decode card data json')
             fname = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()) + '_' + self.dyidstr
             with open(join(curpath,'../log/') + fname + '_raw.json' , 'w') as f:
-                json.dump(dylist, f)
+                json.dump(dylist, f, ensure_ascii=False)
             with open(join(curpath,'../log/') + fname + '_rep.json' , 'w') as f:
                 f.write(str(card_content))
             log.error(f'エロ发生！动态卡片内容解码错误:uid={self.uid}, dynamic_id={self.dyid}. 已经保存至"log/{fname}.json"')
@@ -93,9 +71,12 @@ class Card(object):
     def is_realtime(self, timeinterval: int):
         return False if timeinterval*60 < (int(time.time()) - self.dytime) else True
 
-    def check_black_words(self, blk, islucky):
+    def check_black_words(self, gblk, ublk, islucky):
         ret = False
         txt = ""
+        gblk = re.sub(r' ?, ?', ',', gblk)
+        blk = gblk.split(',') + ublk
+
         # 根据不同的动态内容，提取特定的区块来过滤。
         #txt = json.dumps(self.card, ensure_ascii=False) 
         if self.dytype == 2:
@@ -112,16 +93,16 @@ class Card(object):
             if b[0] == '\\':
                 c = re.findall(b[1:], txt)
                 c = len(c) if c else 0
-                log.info(f'black-words: find {b} {c} times!')
+                log.debug(f'black-words: find {b} {c} times!')
             else:
                 c = txt.count(b)
-                log.info(f'black-words: find {b} {c} times!')
+                log.debug(f'black-words: find {b} {c} times!')
             if c:
                 ret = True
                 log.info(f'Find black word(s) {b} in dynamic {self.dyidstr}, which is posted by {self.nickname}')
                 break
         if islucky == True:
-            if self.dytype == 1:
+            if self.dytype == 1 or conf.getboolean('common','sharelucky'):
                 if "互动抽奖" in str(self.card["origin"]):
                     log.info('动态为转发的抽奖内容，即将屏蔽。')
                     ret = True
@@ -131,7 +112,7 @@ class Card(object):
 
 
     @log.catch
-    def draw(self, box:object()):
+    def draw(self, box:object(), dy_cache:bool=False):
         # 解析通用的信息，并绘制头像、昵称、背景、点赞box，然后调用其他绘制动态主体，最后把所有box合成
         # 制作头像  == faceimg ==
         
@@ -236,10 +217,8 @@ class Card(object):
 
 
         #根据所有的长度制作背景图   == bg ==
-        length = 27 + nickimg.size[1] + 4 + bodyimg.size[1] + 4 + bottomimg.size[1]
         bgcard = self.latest["desc"]["user_profile"].get("decorate_card")
         if bgcard:
-            # print("Find Fans background (number)")
             card_url     = bgcard["card_url"]
             decorate_img = get_Image(Type="decorate_card", url=card_url)
             decorate_col = bgcard["fan"]["color"]
@@ -251,22 +230,26 @@ class Card(object):
             decorate_col = (0,0,0)
             decorate_num = 0
             log.debug('No card background.')
-        log.info(f'BackgroundBox: height={length}, 卡片挂件={bool(decorate_img)}')
-        bgimg = box.bg(height=length, decorate_card=decorate_img, fan_number=decorate_num, fancolor=decorate_col)
+        log.info(f'BackgroundBox: 卡片挂件={bool(decorate_img)}')
+        bgimg = box.bg(decorate_card=decorate_img, fan_number=decorate_num, fancolor=decorate_col)
 
-        log.debug(f'Height of dynamic pic = {length}. Start splicing.')
-        bgimg.paste(faceimg, (9,9), mask=faceimg)
-        bgimg.paste(nickimg, (88,27), mask=nickimg)
-        if self.dytype == 1:
-            bgimg.paste(bodyimg, (76,75), mask=bodyimg)
-        else:
-            bgimg.paste(bodyimg, (88,75), mask=bodyimg)
-        bgimg.paste(bottomimg, (88, length-48), mask=bottomimg)
+        img = box.combine(face=faceimg, nick=nickimg, body=bodyimg, bottom=bottomimg, bg=bgimg, is_reposted=True if self.dytype==1 else False)
 
+        if dy_cache:
+            try:
+                dy_pic_name = f'{self.uid}_{self.nickname}_{self.dyid}_{self.dytype}_{self.dyorigtype}.png'
+                save_Image(img, 'dynamic_card', name = dy_pic_name)
+                log.info(f'Sace Dynamic Card Pic as "{dy_pic_name}" -->  res/cache/dynamic_card/ ')
+            except:
+                log.warning(f'Save Dynamic Card Pic failed! ')
         bio = io.BytesIO()
-        bgimg.save(bio, format="PNG")
+        img.save(bio, format="PNG")
         base64_img = 'base64://' + base64.b64encode(bio.getvalue()).decode()
         log.info('Congratulations! Dynamic Card Image is generated successfully. Encode as "base64" and send to QQbot.\n')
+
+        dy_flag = conf.getboolean('cache', 'dycard_cache')
+        if dy_flag:
+            save_Image(img, 'dynamic_card', f'{self.uid}_{self.dyid}_{self.dytype}_{self.nickname}.png')
 
         return base64_img, ret_txt
         
@@ -277,7 +260,7 @@ class Card(object):
         # 先按类型绘制原始动态,贴身灰色背景，然后绘制当前动态（纯文字），拼接，最后返回完整图片
         log.info('Type = Repost')
         oritype = self.latest["desc"]["orig_type"]
-        if oritype in [2,4,8,64,256]:
+        if oritype in [2,4,8,64,256,2048]:
             orname =content["origin_user"]["info"]["uname"]
             orface = get_Image(Type = "face", url=content["origin_user"]["info"]["face"])
         elif oritype in [512]:
@@ -299,6 +282,8 @@ class Card(object):
             img_ori = self.drawAudio(content["origin"], box, is_rep=True)
         elif oritype == 512: # 转发番剧剧集
             img_ori = self.drawBangumi(content["origin"], box, is_rep=True)
+        elif oritype == 2048:   # 转发h5活动
+            img_ori = self.drawH5Event(content["origin"], box, is_rep=True)
         
 
         img = box.repost(orface, orname, img_now, img_ori)
@@ -391,7 +376,13 @@ class Card(object):
 
     # Type=2048 H5活动      H5Event
     def drawH5Event(self, content, box, is_rep=False):
-        pass
+        h5title = content["sketch"]["title"]
+        h5desc  = content["sketch"]["desc_text"]
+        h5cover = get_Image(Type="cover", url=content["sketch"]["cover_url"])
+        desc    = content["vest"]["content"]
+
+        img = box.h5( h5title, h5desc, h5cover, desc, ex=self.extra, is_reposted=is_rep)
+        return img
 
     # Type=2049 霹雳霹雳慢话
     def drawComic(self, content, box, is_rep=False):
@@ -409,18 +400,44 @@ class Box(object):
     # self.width = 300
     # self.minheight = 100
 
-    def __init__(self, width, max_height):
-        self.maxheight = max_height
-        self.width = width
-        self.minheight = int(width / 2)
+    # def __init__(self, width, max_height):
+    def __init__(self, conf:object):
+        self.maxheight = conf.getint('drawCard','height_max')
+        self.width = conf.getint('drawCard','width')
+        self.minheight = int(conf.getint('drawCard','width') / 2)
         self.path = dirname(__file__)
         self.msyh = join(self.path, 'fonts/pinfang.ttf')
         self.fanfont = join(self.path, 'fonts/fans_num.ttf')
+        self.fontsize_large = conf.getint('drawCard','font_size_1')
+        self.fontsize_medium = conf.getint('drawCard','font_size_2')
+        self.fontsize_small = conf.getint('drawCard','font_size_3')
+        self.box_gap_agni = conf.getfloat('drawCard','box_size_agnification')
+        self.image_max = conf.getint('drawCard','image_max_size')
+        self.img_min    = conf.getint('drawCard','image_min_size')
+
+
 
     # ====================box.combine====================
     # 按顺序组合box，计算整体长度
-    # 其中背景、...
-    # 大概不需要这个了
+    def combine(self, face:object, nick:object, body:object, bottom:object, bg=None, is_reposted:bool=False):
+        len = 27 + nick.size[1] + 4 + body.size[1] + 4 + bottom.size[1]
+        log.debug(f'Height of dynamic pic = {len}. Start splicing.')
+        img = Image.new('RGBA', (self.width, len), 'white')
+        draw = ImageDraw.Draw(img)
+        draw.rounded_rectangle(((0,0),(img.size[0]-1,img.size[1]-1)), radius=8, fill=(255,255,255,255))
+
+        img.paste(face, (9,9), mask=face)
+        img.paste(nick, (88,27), mask=nick)
+        if is_reposted:
+            img.paste(body, (88, 75), mask=body)
+        else:
+            img.paste(body, (76, 75), mask=body)
+        img.paste(bottom, (88, len-48), mask=bottom)
+        if bg:
+            img.paste(bg, (self.width-48-bg.size[0],18 ), mask=bg)
+        return img
+
+
 
 
     # ====================box.face()====================
@@ -429,7 +446,7 @@ class Box(object):
     # offset 9,9
     def face(self, face, pendant=None, avatar_subscript=None):
         fsize,psize,asize = 42, 72, 18
-        img = Image.new('RGBA', (psize,psize), color=(0,0,0,0))
+        img = Image.new('RGBA', (psize,psize), color='white')
         # round face mask
         mask = Image.new('RGBA', (fsize*2, fsize*2), color=(0,0,0,0))
         mask_draw = ImageDraw.Draw(mask)
@@ -457,17 +474,17 @@ class Box(object):
     # return 图片对象
     # offset 88,27
     def nickname(self, nick, time, isBigVIP=False):
-        img = Image.new('RGBA', (self.width - 88, 46), (0,0,0,0))
+        ts=(self.width - 88, 46)        # target size
+        img = Image.new('RGBA', ts, (255,255,255,255))
         draw = ImageDraw.Draw(img)
+        font = ImageFont.truetype(self.msyh, self.fontsize_large)
 
-        font = ImageFont.truetype(self.msyh, 18)
         nick_color = (251, 114, 153, 255) if isBigVIP else (32,32,32,255)
         draw.text((0,3), nick, fill=nick_color,font=font)
         
-        font = ImageFont.truetype(self.msyh,12)
+        font = ImageFont.truetype(self.msyh,self.fontsize_small)
         time_color = (153, 162, 170,255)
         draw.text((0,31), time, fill=time_color,font=font)
-
         return img
 
         
@@ -476,22 +493,22 @@ class Box(object):
     # 底部栏，如果数据都趋近于0，就绘制预设数字(114514),如果采集时已经有一定数据，那么用原始数据
     # return 图片对象，高
     def bottom(self, share, comm, like):
-        img = Image.new('RGBA', (92*3, 48), (0,0,0,0))
+        img = Image.new('RGBA', (92*3, 48), 'white')
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype(self.msyh, 12)
         color = (153, 162, 170, 255)
 
         ico = get_ico('share', em=20)
         img.paste(ico, (0,16), ico)
-        draw.text((20+4, 18), num_human(share), fill=color,font=font)
+        draw.text((20+4, 18), num_human(share) if share else '分享', fill=color,font=font)
 
         ico = get_ico('comment', em=20)
         img.paste(ico, (0+96,16), ico)
-        draw.text((96+20+4, 18), num_human(comm), fill=color,font=font)
+        draw.text((96+20+4, 18), num_human(comm) if comm else '评论', fill=color,font=font)
 
         ico = get_ico('like', em=20)
         img.paste(ico, (0+192,16), ico)
-        draw.text((192+20+4, 18), num_human(like), fill=color,font=font)
+        draw.text((192+20+4, 18), num_human(like) if like else '点赞', fill=color,font=font)
 
         return img
 
@@ -500,27 +517,24 @@ class Box(object):
     # 动态卡片的整体背景，包括外围动态卡片白色背景和右上角的装扮、三个点
     # 输入内容包括整体高度、装扮的图片和数字。整体高度由 nickname + body + buttom 三部分组成
     # return 图标对象
-    def bg(self, height, decorate_card=None, fan_number="00000", fancolor=(31,31,31,255)):
-        img = Image.new('RGBA', (self.width, height), (0,0,0,0))
-        draw=ImageDraw.Draw(img)
-        draw.rounded_rectangle(((0,0),(img.size[0]-1,img.size[1]-1)), radius=8, fill=(255,255,255,255))
-
+    def bg(self, decorate_card=None, fan_number="00000", fancolor=(31,31,31,255)):
+        img = None
         if decorate_card:
             # 动态装扮两种尺寸，横竖比大于2:1=>146x44，否则60 × 34
             s=decorate_card.size
-            
             if s[0]/s[1] > 2:
                 log.debug(f'Got decorate card object, its size={s}, target size=(146,44)')
+                img = Image.new('RGBA', (146,44), 'white')
                 dimg = decorate_card.resize((146,44), Image.ANTIALIAS)
-                draw = ImageDraw.Draw(dimg)
+                img.paste(dimg, (0,0), dimg)
+                draw = ImageDraw.Draw(img)
                 font = ImageFont.truetype(self.fanfont, 12)
                 draw.text((40,17), fan_number, fill=fancolor, font=font)
-
-                img.paste(dimg, (self.width - 48 - 146,18), dimg)
             else:
                 log.debug(f'Got decorate card object, its size={s}, target_size(60,34)')
+                img = Image.new('RGBA', (146,44), 'white')
                 dimg = decorate_card.resize((60,34), Image.ANTIALIAS)
-                img.paste(dimg, (self.width - 48 - 60,18), dimg)
+                img.paste(dimg, (0,0), dimg)
         return img
 
 
@@ -571,6 +585,7 @@ class Box(object):
         blue_color = (23, 139, 207, 255)
 
         rep = "ori" if is_reposted else "now"
+        bgcolor = (244, 245, 247,255) if is_reposted else (255,255,255,255)
         if ex:
             # print(f'ex:{ex}')
             emote = ex["emolist"]
@@ -601,12 +616,12 @@ class Box(object):
 
         point = 0   # 文字位置指针(宽)
         ch_num = 0  # 文字数量指针
-        imgl = Image.new('RGBA', (self.width-88 - 24, 22), (0,0,0,0))
+        imgl = Image.new('RGBA', (self.width-88 - 24, 22), bgcolor)
         draw = ImageDraw.Draw(imgl)
         font = ImageFont.truetype(self.msyh, 14)
         fulltextcard = []
 
-        while True:
+        while True and len(text):
             ch = text[0]
             # 强制换行或者遇到换行符
             if ch == '\n' or point >= (self.width -88 -24 - (24 + 22)):     # <== 自然换行的界定：宽度上，卡片左边去掉88，右边去掉24，还有字符宽度最高22，
@@ -619,7 +634,7 @@ class Box(object):
                     text = text[1:]
                     ch_num = ch_num + 1
                 fulltextcard.append(imgl)
-                imgl = Image.new('RGBA', (self.width-88 -24, 22), (0,0,0,0))
+                imgl = Image.new('RGBA', (self.width-88 -24, 22), bgcolor)
                 draw = ImageDraw.Draw(imgl)
                 continue
             # 遇到[，判断是否遇到了表情包
@@ -784,7 +799,8 @@ class Box(object):
             line=3
         log.debug(f'Got {pic_count} pics, {line} pics per line.')
 
-        img = Image.new('RGBA', (text_img.size[0], length), (0,0,0,0))
+        bgcolor = (244, 245, 247,255) if is_reposted else (255,255,255,255)
+        img = Image.new('RGBA', (text_img.size[0], length), bgcolor)
         img.paste(text_img, (0,0), text_img)
         # ====error====
         for n, im in enumerate(nimage):
@@ -806,7 +822,8 @@ class Box(object):
 
         # 视频小卡片，封面203x127，贴合小边缩放、裁切；标题最多两行，简介最多两行，
         # 创建基础卡片
-        vimg = Image.new('RGBA', (self.width-88 - 24, 129), (0,0,0,0))
+        bgcolor = (244, 245, 247,255) if is_reposted else (255,255,255,255)
+        vimg = Image.new('RGBA', (self.width-88 - 24, 129), bgcolor)
         draw = ImageDraw.Draw(vimg)
         fontbig = ImageFont.truetype(self.msyh, 14)
         fontsmall=ImageFont.truetype(self.msyh, 12)
@@ -846,10 +863,10 @@ class Box(object):
         point,line = offsetx,0
         for n,ch in enumerate(title):
             chnxt = title[n+1] if n+1<len(title) else None
-            draw.text((point, offsety + line*19), ch, fill=color_title, font=fontbig)
             if line>0 and point+22 > maxx and len(title)-n>1:
                 draw.text((point, offsety+line*19), '...', fill=color_title, font=fontbig)
                 break
+            draw.text((point, offsety + line*19), ch, fill=color_title, font=fontbig)
             if point + 16 > maxx:
                 point = offsetx
                 line = line+1
@@ -882,7 +899,8 @@ class Box(object):
         vimg.paste(ico, (offsetx, offsety), ico)
         draw.text((offsetx+20, offsety-1), num_human(danmuku), color_info, fontsmall)        
         # 图片拼接
-        img = Image.new('RGBA', (self.width-88 - 24, card_point+129), (0,0,0,0))
+        bgcolor = (244, 245, 247,255) if is_reposted else (255,255,255,255)
+        img = Image.new('RGBA', (self.width-88 - 24, card_point+129), bgcolor)
         if (not is_reposted) and dynamic_text:
             img.paste(img_dynamic, (0,0), img_dynamic)
         img.paste(vimg, (0, card_point), vimg)
@@ -1018,20 +1036,20 @@ class Box(object):
 
 
     # ====================box.bangumi====================
-    # 番剧发布和分享的卡片，未确认
+    # 番剧发布和分享的卡片
     # return 图片对象，高
     def bangumi(self, sptitle, spcover, eptitle, epcover, epplay, epdanmu, is_reposted=False):
         card_point = 0
 
         # 视频小卡片，封面203x127，贴合小边缩放、裁切；标题最多两行，简介最多两行，
         # 创建基础卡片
-        vimg = Image.new('RGBA', (self.width-88 - 24, 129), (0,0,0,0))
+        vimg = Image.new('RGBA', (self.width-88 - 24, 129), (255,255,255,255))
         draw = ImageDraw.Draw(vimg)
         fontbig = ImageFont.truetype(self.msyh, 14)
         fontsmall=ImageFont.truetype(self.msyh, 12)
         color_title= (33,33,33,255)
         color_info = (153, 153, 153, 255)
-        draw.rounded_rectangle(((0,0),(vimg.size[0]-1,vimg.size[1]-1)), radius=4, fill=(0,0,0,0), outline=(color_info),width=1)
+        draw.rounded_rectangle(((0,0),(vimg.size[0]-1,vimg.size[1]-1)), radius=4, fill=(255,255,255,255), outline=(color_info),width=1)
 
         # 放置封面
         s =epcover.size
@@ -1045,22 +1063,26 @@ class Box(object):
             s1 = int(s[0] * 127/203 /2)
             epcover = epcover.crop((0,s[1]/2-s1 ,s[0]-1,s[1]/2+s1 ))
             epcover_stand = epcover.resize((203,127), Image.ANTIALIAS)
-        print(f'size of epcover={s}, size of epcover_stand={epcover_stand.size}')
+        log.info(f'size of epcover={s}, size of epcover_stand={epcover_stand.size}')
         mask=Image.new('RGBA', (203,127), (0,0,0,0))    
         maskdr = ImageDraw.Draw(mask)
         maskdr.rounded_rectangle((0,0,202,126), radius=4, fill=(0,0,0,255))
         # print(f'size of mask={mask.size}')
         vimg.paste(epcover_stand, (1,1),mask)
+
+        # 封面上放一个番剧的字符
+        draw.rounded_rectangle(((133,8),(175,26)), radius=2, fill=(251, 114, 153,255))
+        draw.text((140,10), text=("番 剧"), fill=(255,255,255,255),font=fontsmall)
         # 写标题
         offsetx, offsety = 203+12, 9+2
         maxx = vimg.size[0]-16
         point,line = offsetx,0
         for n,ch in enumerate(eptitle):
             chnxt = eptitle[n+1] if n+1<len(eptitle) else None
-            draw.text((point, offsety + line*19), ch, fill=color_title, font=fontbig)
             if line>0 and point+22 > maxx and len(eptitle)-n>1:
                 draw.text((point, offsety+line*19), '...', fill=color_title, font=fontbig)
                 break
+            draw.text((point, offsety + line*19), ch, fill=color_title, font=fontbig)
             if point + 16 > maxx:
                 point = offsetx
                 line = line+1
@@ -1082,10 +1104,68 @@ class Box(object):
         return img
 
     # ====================box.h5====================
-    # h5活动页卡片，未确认
+    # h5活动页卡片
+    # 输入：h5活动的标题简介封面、附带文字和特殊字符。
     # return 图片对象，高
-    def h5(a, is_reposted=False):
-        pass
+    def h5(self, h5title:str, h5desc:str, h5cover:dict, desc:str=None, ex:dict=None, is_reposted=False):
+        
+        #bgcolor = (244, 245, 247,255) if is_reposted else (255,255,255,255)
+        fontbig = ImageFont.truetype(self.msyh, 14)
+        fontsmall=ImageFont.truetype(self.msyh, 12)
+        color_title= (33,33,33,255)
+        color_desc = (102, 102, 102, 255)
+
+        
+        color_info = (153, 153, 153, 255)
+        # 文字部分
+        timg = self.text(desc, ex, is_reposted=is_reposted)
+        # 主体部分画个框
+        himg = Image.new("RGBA", (580,80), (0,0,0,0))
+        himgdr = ImageDraw.Draw(himg)
+        himgdr.rounded_rectangle(((0,0),(himg.size[0]-1,himg.size[1]-1)), radius=4,   \
+            fill=(255,255,255,255), outline=(color_info),width=1)
+        # 封面,可能不是正方形，取短边缩放到78x78，然后裁剪
+        s=h5cover.size
+        if s[0] == s[1]:
+            cover = h5cover.resize((78,78),Image.ANTIALIAS)
+        elif s[0]>s[1]:
+            cover = h5cover.crop(((s[0]-s[1])/2, 0, (s[0]+s[1])/2, s[1])).resize((78,78), Image.ANTIALIAS)
+        else:
+            cover = h5cover.crop((0, (s[1]-s[0])/2, s[0], (s[0]+s[1])/2)).resize((78,78), Image.ANTIALIAS)
+        mask=Image.new('RGBA', (78,78), (0,0,0,0))    
+        maskdr = ImageDraw.Draw(mask)
+        maskdr.rounded_rectangle((0,0,78,78), radius=4, fill=(0,0,0,255))
+        log.debug(f'h5cover, size=({h5cover.size}) -> (78,78)')
+        # print(f'size of mask={mask.size}')
+        himg.paste(cover, (1,1),mask)
+        # 标题
+        offsetx, offsety, maxx = 80+15, 15+3, 580 - 15
+        point = offsetx
+        for n,ch in enumerate(h5title):
+            chnxt = h5title[n+1] if n+1<len(h5title) else None
+            if point + 22 > maxx:
+                himgdr.text((point, offsety), '...', fill=color_title, font=fontbig)
+                break
+            himgdr.text((point, offsety), ch, fill=color_title, font=fontbig)
+            point += chgap(ch, chnxt, 8)
+        # 简介，仅一行
+        offsetx, offsety, maxx = 80+15, 15+30+4, 580 - 15
+        point = offsetx
+        for n,ch in enumerate(h5desc):
+            chnxt = h5title[n+1] if n+1<len(h5title) else None
+            if point + 22 > maxx:
+                himgdr.text((point, offsety), '...', fill=color_desc, font=fontsmall)
+                break
+            himgdr.text((point, offsety), ch, fill=color_desc, font=fontsmall)
+            point += chgap(ch, chnxt, 6)
+        # 拼接
+
+        fullsize = (580, timg.size[1] + 8 + himg.size[1])
+        img = Image.new('RGBA', fullsize, (0,0,0,0))
+        img.paste(timg, (0,0), timg)
+        img.paste(himg, (0, img.size[1]-80), himg)
+        return img
+
 
 
 
@@ -1143,16 +1223,18 @@ def analyze_extra(latest: dict, card: dict):
             if not ats == {}:
                 for a in ats:
                     a_lo = a["location"]
-                    a_le = a["length"]
                     a_ty = a["type"]
+                    a_le = a["length"]-1 if a_ty==2 else a["length"]
+                    
                     at["now"][a_lo]=[a_le, a_ty]
         if card["item"].get("ctrl"):
             ats = card["item"]["ctrl"]
             if not ats == {}:
                 for a in ats:
                     a_lo = a["location"]
-                    a_le = a["length"]
                     a_ty = a["type"]
+                    a_le = a["length"]-1 if a_ty==2 else a["length"]
+                    
                     at["now"][a_lo]=[a_le, a_ty]
 
     if card.get("origin"):
@@ -1162,16 +1244,16 @@ def analyze_extra(latest: dict, card: dict):
                 if not ats == {}:
                     for a in ats:
                         a_lo = a["location"]
-                        a_le = a["length"]
                         a_ty = a["type"]
+                        a_le = a["length"]-1 if a_ty==2 else a["length"]
                         at["ori"][a_lo]=[a_le, a_ty]
             if card["origin"]["item"].get("ctrl"):
                 ats = card["origin"]["item"]["ctrl"]
                 if not ats == {}:
                     for a in ats:
                         a_lo = a["location"]
-                        a_le = a["length"]
                         a_ty = a["type"]
+                        a_le = a["length"]-1 if a_ty==2 else a["length"]
                         at["ori"][a_lo]=[a_le, a_ty]
             
 

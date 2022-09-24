@@ -4,7 +4,7 @@ import base64
 from io import BytesIO
 from os.path import dirname, join, exists
 from PIL import Image, ImageDraw
-import cairosvg as svg
+# import cairosvg as svg
 from loguru import logger as log
 
 '''
@@ -18,15 +18,25 @@ from loguru import logger as log
 '''
 
 # 各图标的文件和默认大小信息
-ico_like    = {'file':'like.svg',       'size':(40,40)        }
-ico_share   = {'file':'share.svg',      'size':(40,40)        }
-ico_comment = {'file':'comment.svg',    'size':(40,40)        }
-ico_link    = {'file':'link.svg',       'size':(13,15)        }
-ico_luck    = {'file':'luck.svg',       'size':(17,16)        }
-ico_persional = {'file':'lighting_yellow.svg', 'size':(64,64) }
-ico_group   = {'file':'lighting_blue.svg',     'size':(64,64) }
-ico_danmuku = {'file':'danmuku.svg',    'size':(40,40)        }
-ico_playsec = {'file':'play_sec.svg',   'size':(40,40)        }
+# ico_like    = {'file':'like.svg',       'size':(40,40)        }
+# ico_share   = {'file':'share.svg',      'size':(40,40)        }
+# ico_comment = {'file':'comment.svg',    'size':(40,40)        }
+# ico_link    = {'file':'link.svg',       'size':(13,15)        }
+# ico_luck    = {'file':'luck.svg',       'size':(17,16)        }
+# ico_persional = {'file':'lighting_yellow.svg', 'size':(64,64) }
+# ico_group   = {'file':'lighting_blue.svg',     'size':(64,64) }
+# ico_danmuku = {'file':'danmuku.svg',    'size':(40,40)        }
+# ico_playsec = {'file':'play_sec.svg',   'size':(40,40)        }
+
+ico_like    = {'file':'like.png',       'size':(40,40)        }
+ico_share   = {'file':'share.png',      'size':(40,40)        }
+ico_comment = {'file':'comment.png',    'size':(40,40)        }
+ico_link    = {'file':'link.png',       'size':(13,15)        }
+ico_luck    = {'file':'luck.png',       'size':(17,16)        }
+ico_persional = {'file':'persional.png', 'size':(64,64) }
+ico_group   = {'file':'group.png',     'size':(64,64) }
+ico_danmuku = {'file':'danmuku.png',    'size':(40,40)        }
+ico_playsec = {'file':'play_sec.png',   'size':(40,40)        }
 
 # 集合成一个字典
 icos={  'like':ico_like,
@@ -61,10 +71,11 @@ def get_ico(name, em=0):
             return img_png
         log.warning(f'Get_ICO: {name} No such file!')
         return None
-    # 读取svg文件
+    # 读取svg文件   !! 2022-08-08 所有SVG图像转换为PNG图像。
     svg_path = join(curpath, icos[name]['file'])
-    with open(svg_path,'r') as f:
-        text = f.read()
+    # with open(svg_path,'r') as f:
+    #     text = f.read()
+    img = Image.open(svg_path)
     # 配置图片大小，如果没有传入大小参数，则使用默认大小
     if em == 0:
         size_width = icos[name]['size'][0]
@@ -72,12 +83,13 @@ def get_ico(name, em=0):
     else:
         size_width = em
         size_height = size_width * icos[name]['size'][1] / icos[name]['size'][0]
-    # 替换svg中大小的关键字，然后渲染图片
-    text=text.replace('$(SVG_WIDTH)', str(size_width))
-    text=text.replace('$(SVG_HEIGHT)', str(size_height))
-    svg_png = svg.svg2png(bytestring=text)
-    # SVG对象传递给PIL对象，返回该对象和透明图层
-    img_png = Image.open(BytesIO(svg_png)).convert('RGBA')
+    # 替换svg中大小的关键字，然后渲染图片  !! 2022-08-08 所有SVG图像转换为PNG图像。
+    # text=text.replace('$(SVG_WIDTH)', str(size_width))
+    # text=text.replace('$(SVG_HEIGHT)', str(size_height))
+    # svg_png = svg.svg2png(bytestring=text)
+    # SVG对象传递给PIL对象，返回该对象和透明图层  !! 2022-08-08 所有SVG图像转换为PNG图像。
+    # img_png = Image.open(BytesIO(svg_png)).convert('RGBA')
+    img_png = img.resize((int(size_width), int(size_height)), Image.ANTIALIAS).convert('RGBA')
     # img_png.save(join(curpath,'test_ico_png_full.png'))
 
 
@@ -92,12 +104,12 @@ def get_Image(Type, url=None, md5=None, path=None):
         path_url = join(join(curpath, Type),filename)
         if exists(path_url):
             # print(f'Image {filename} exist, load from file.')
-            log.info(f"Getting image form Internet, from files, type={Type}, name={filename}")
+            log.debug(f"Getting image form Internet, from files, type={Type}, name={filename}")
             img = Image.open(path_url)
             return img.convert('RGBA')
             
         resp = requests.get(url)
-        log.info(f"Getting image form Internet, downloading, type={Type}, name={filename}")
+        log.debug(f"Getting image form Internet, downloading, type={Type}, name={filename}")
         img = Image.open(BytesIO(resp.content))
         dirpath = join(curpath, Type)
         if not os.path.exists(dirpath):
@@ -118,11 +130,11 @@ def get_Image(Type, url=None, md5=None, path=None):
         path_url = join(dirpath,md5)
         if(exists(path_url + 'png')):
             path_url = path_url + 'png'
-            log.info(f"Getting image form MD5, from file, type={Type}, name={md5+'.png'}")
+            log.debug(f"Getting image form MD5, from file, type={Type}, name={md5+'.png'}")
             return Image.open(path_url).convert('RGBA')
         if(exists(path_url + 'jpg')):
             path_url = path_url + 'jpg'
-            log.info(f"Getting image form MD5, from file, type={Type}, name={md5+'.jpg'}")
+            log.debug(f"Getting image form MD5, from file, type={Type}, name={md5+'.jpg'}")
             return Image.open(path_url).convert('RGBA')
         # 文件不存在，则根据类型拼接url后联网获取
         if Type == 'face':
@@ -131,7 +143,7 @@ def get_Image(Type, url=None, md5=None, path=None):
             url_md5 = "https://i1.hdslb.com/bfs/archive/" + md5
         else:
             return Image.new('RGBA',(104,104), 'white')
-        log.info(f"Getting image form MD5, downloading, type={Type}, name={md5}")
+        log.debug(f"Getting image form MD5, downloading, type={Type}, name={md5}")
         resp = requests.get(url_md5)
         img = Image.open(BytesIO(resp.content))
         
@@ -149,6 +161,15 @@ def get_Image(Type, url=None, md5=None, path=None):
         log.info(f'Getting image from file path.')
         return Image.open(path).convert('RGBA')
     return None
+
+def save_Image(img:object, Type:str, name:str, path=None):
+    if not path:
+        curpath = join(cur, 'cache')
+        if not exists(join(curpath, type)):
+            os.makedirs(join(curpath, Type))
+        img.save(join(join(curpath, Type), name))
+    else:
+        img.save(join(path, name))
 
 # 获得一个圆形的蒙版，根据头像大小来获得
 # img为头像的PIL对象

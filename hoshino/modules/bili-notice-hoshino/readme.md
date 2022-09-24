@@ -1,86 +1,93 @@
 # bili动态监视器(Hoshino插件)
 
-[![Lisence-GPL3.0](https://img.shields.io/github/license/kushidou/bili-notice-hoshino)]((LICENSE))
+[![Lisence](https://img.shields.io/github/license/kushidou/bili-notice-hoshino)]((LICENSE))
 ![PythonVer](https://img.shields.io/badge/python-3.8+-blue)
 [![HoshinoVer](https://img.shields.io/badge/Hoshino-v2.0.0%2B-green)](https://github.com/Ice-Cirno/HoshinoBot)
-[![Version](https://img.shields.io/badge/Beta-v0.b.5.2-lightgrey)](https://github.com/kushidou/bili-notice-hoshino)
+[![Version](https://img.shields.io/badge/Beta-v0.b.7.x-lightgrey)](https://github.com/kushidou/bili-notice-hoshino)
 [![Q群](https://img.shields.io/badge/QQ%E7%BE%A4-655742099-yellow)](https://jq.qq.com/?_wv=1027&k=CXGsKj1P)
 
-## Desc 简介
+> __重要修复__
+> 
+> 2022年8月24日B站更新了搜索API，需要cookies验证。请更新最新代码，否则“昵称关注”功能不可用。
+
+*版本更新日志请查看[wiki页面](https://github.com/kushidou/bili-notice-hoshino/wiki/%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)*
+
+## 简介
 
 用于视奸指定up主，并将其最新的动态信息推送到申请的群里。
 
-<figure class="half">
-    <img src="./res/pic_markdown/效果图.png" width="300"/>
-    <img src="./res/pic_markdown/生成图.png" width="300"/>
-</figure>
+<table rules="none" align="center">
+	<tr>
+		<td>
+			<center>
+				<img src="./res/pic_markdown/效果图.png" width="100%" />
+				<br/>
+				<font>群消息</font>
+			</center>
+		</td>
+		<td>
+			<center>
+				<img src="./res/pic_markdown/生成图.png" width="80%" />
+				<br/>
+				<font>生成的卡片</font>
+			</center>
+		</td>
+	</tr>
+</table>
+
 
 ## 功能：
 
 > - 获取UP主最新的动态，生成图片发送到群里
-> - 在群中关联up主，可以推送包括动态、视频、短视频、专栏文章、~~音频、~~相簿在内的绝大多数动态信息（不支持直播）。
+> - 在群中关联up主，可以推送包括动态、视频、短视频、专栏文章、音频、相簿在内的绝大多数动态信息（暂不支持直播）。
 > - 支持过滤转发的互动抽奖动态、广告（简单粗暴的关键词过滤），可以由**机器人管理员**控制。
 > - ~~机器人管理员和群主、群管理可以直接增加视奸的up主，普通群员的申请信息会私发到机器人管理员处进行处理。~~（还没做，仅群管理可以关注和取关）
-> - 协议、业务分离设计，方便不同机器人移植！ 接口文档即将更新~~
+> - 协议、业务分离设计，方便不同机器人平台进行移植 [接口文档](./api.md)
+
 
 
 ## 部署
+
+详细的部署步骤，及Windows平台部署的注意事项，请访问本项目[Wiki页📕](https://github.com/kushidou/bili-notice-hoshino/wiki/%E9%83%A8%E7%BD%B2%E6%8F%92%E4%BB%B6)
 
 1. 进入到Hoshino的modules目录，克隆项目
 
 `git clone https://github.com/kushidou/bili-notice-hoshino.git`
 
-2. 安装几个python包（也可以手动pip安装）
+2. 安装依赖的包
 
 `pip install -r ./requirements.txt `
 
-> ***PS.***
-> 
-> 在Windows平台使用时，通常会报告`no library called "cairo" was found` 的错误，需要按照 [#8]() 的方案处理一下。
->
-> 参考连接：
->
-> [win10 安装 cairosvg](https://www.jianshu.com/p/5f566c26334f)
->
-> [GTK-for-Windows](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer)
+3. 将'uppers_example'重命名为 uppers， 将'config_example.ini`重命名为 config.ini
 
-3. 将uppers_example重命名为 uppers   (uppers目录下 `list.json`为空时，至少要保证里面是`{}`)
-
-> ***PS.***
-> 由于插件的编写环境为Linux，当运行在Windows平台，自带的配置文件可能出现编码兼容性问题。可以创建一个新的文件夹并命名`uppers`，然后创建一个新的`list.json`文件，内容为空的json结构: `{}`
+<details>
+  <summary>config配置方法</summary>
+<a herf="https://github.com/kushidou/bili-notice-hoshino/wiki/config%E9%85%8D%E7%BD%AE">config配置-wiki</a>
+[config配置-wiki](https://github.com/kushidou/bili-notice-hoshino/wiki/config%E9%85%8D%E7%BD%AE)
+</details>
 
 
 4. 在`config/__bot__.py`的`MODULES_ON`中，添加`"bili-notice-hoshino"`，然后重启HoshinoBot。
 
 5. enjoy
 
-<details>
-  <summary>插件内文件说明</summary>
-
-> **bili_notice_hoshino.py** ==>  主程序
->
-> **res** ==>  目录保存渲染所需要的图片文件和字体;以及缓存图片，以md5命名
->
-> **uppers/uid.json** ==>  保存各个up主的已发送动态列表(防止程序调试等情况反复重发)
->
-> **uppers/list.json** ==>  记录up主和群的对应关系，及几个配置。
->
-> **log/xxx.log** ==>  日志，按日分类，最长七天。仍在测试中，暂不支持修改。
-</details>
-
 ## 使用
 
 ### 1-关注
 
-启用插件后，群内发送  `关注672328094`  并@机器人即可关注 _嘉然今天吃什么_，嘉然更新的动态都会发过来哦~
+启用插件后，群内发送  `关注uid/昵称`  并@机器人即可关注 _[@嘉然今天吃什么](https://space.bilibili.com/672328094)_，嘉然更新的动态都会发过来哦~
 
-![关注](./res/pic_markdown/dynamic_follow.png)
+![follow](./res/pic_markdown/dynamic_follow.png)
+
+> ** 2022-07-28重要更新：**
+> 现在支持使用昵称关注。如果昵称和现有UP主的名字、短昵称、或者B站搜索页结果完全匹配则直接关注。若无法完全匹配，那么会询问是否要关注，终于不用再去复制UID了！！🎆🎇🎆🎇🎆
+> ![follow_by_nick](./res/pic_markdown/follow_by_nick.png)
 
 ### 2-取关
 
-群内发送  `取关208259`   并@机器人即可取关叔叔， 请注意，只有所有群都取关叔叔后，动态更新轮询才会跳过叔叔哦！
+群内发送  `取关208259`   并@机器人即可取关叔叔。同样可以通过直接输入名字、短昵称来关注
 
-![取关](./res/pic_markdown/dynamic_unfollow.png)
+![unfollow](./res/pic_markdown/dynamic_unfollow.png)
 
 ### 3-查看已关注
 
@@ -88,20 +95,10 @@
 
 ![关注列表](./res/pic_markdown/follow_list.png)
 
-机器人管理员发送`所有关注`、`所有群关注`可以获得所有所有群关注列表的详细信息
+机器人管理员直接发送`所有关注`、`所有群关注`可以获得所有所有群关注列表的详细信息
 
-### 4-debug
 
-由于插件刚刚推出beta版，不仅功能没做完，还有很多隐形bug，因此 `bili_notice_test.py` 提供了一个debug的方法，该方法只能机器人的管理员使用。
-
-发送"测试动态\[dynamic_id\]"或者"测试up\[uid\]"即可让机器人立即尝试发送一条动态，来查看问题出在哪里。报告问题时也请提供该方法得到的错误日志。
-
-<figure class="half">
-    <img src="./res/pic_markdown/debug-测试动态.png" width="300"/>
-    <img src="./res/pic_markdown/debug-测试up.png" width="300"/>
-</figure>
-
-### 5-机器人管理指令
+### 4-机器人管理指令
 
 支持机器人管理员调整bili动态监视器的全局配置，比如是否过滤转发抽奖、是否进行关键词屏蔽等。比如：
 
@@ -111,9 +108,12 @@
 |---|-----|-------|---------|---|
 |过滤抽奖|islucky|uid|true\|false|是否屏蔽抽奖开奖动态或者转发的抽奖。|
 |关键词过滤|black-words|uid|add 关键词1 关键词2|add 增加关键词，remove移除，list列出已经设置的关键词|
-|更新信息|update| - | - |立即读取配置文件，更新配置（不检查合法性，可能引发错误）
+|重载信息|reload| - | - |立即读取up记录，用于手动更新配置文件（不检查合法性，可能引发错误）|
+|昵称操作|add-nick/ del-nick/ list-nick| uid | nick(一次一个，list不要) | 为特定对象添加、删除、查看特定用户短昵称|
 
 ## 后记
+
+*2022-05-26*
 
 历时将近3个礼拜的摸鱼，终于把这个插件开发出了一个模样，虽然各种功能都不算完善。之所以选择HoshinoBot作为机器人的基础平台，主要还是它的功能封装的好用，对于我一个自学python的初学者来说是最方便的。我之前也开发了一些十几行的小插件，比如复读功能改成随机复读、群员消息防撤回等。
 
@@ -121,30 +121,29 @@
 
 由于样本少，如果遇到一些奇奇怪怪的动态时，会无法分享动态。如果你遇到的这种情况，欢迎在issue里提交这条动态的id！（尤其是类似番剧分享、发布，H5活动页分享等）
 
-#### 鸣谢
+*2022-07-28*
+
+从插件push到Github已经两个月了，这期间增加了很多新功能，也修了不少bug。最近修改的频率变低了，主要是正经工作忙了起来，导致周末更不想改代码了。
+
+在今天把昵称操作的代码上线后，最近会降低更新频率，只进行紧急bug修复，新功能的开发、动态类型的补足都会一定程度延后，希大家谅解。
+
+最后我想给插件设计一个logo、slogan或者“看板娘”，并且做成视频放到b站上进行推广，如果大家有什么好的创意，或者牵线搭桥、提供建议的，都可以联系我，感谢~
+
+<details>a
+    <summary>联系方式</summary>
+
+> 1. 邮箱 small09@qq.com
+> 
+> 2. QQ群 655742099
+> 
+> 3. B站私信 唐唐xiaozhen
+>
+
+</details>
+
+### 鸣谢
 
 [Ice-Cirno/HoshinoBot](https://github.com/Ice-Cirno/HoshinoBot)
 
 [SocialSisterYi/bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)
-
-
-#### ToDo
-
-- [x] 完善对专栏文章、小视频的支持
-
-- [x] 慢慢完善对番剧、影视剧集等一般人不会发的类型的支持
-
-- [x] 支持自定义过滤词，比如“运营代转”
-
-- [ ] 优化文字绘制，更清晰锐利
-
-- [ ] 支持直播开播推送，支持手动拉取特定的多条动态
-
-- [ ] 修复即将遇到的各种奇奇怪怪的BUG
-
-- [ ] UP主信息换用数据库存储，提高容量(咕咕咕~等我先学一下数据库的基础)
-
-- [x] 提供移植指南，开发适用于其他bot或者nonebot1、nonebot2的插件版本
-
-
 

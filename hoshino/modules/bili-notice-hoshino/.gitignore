@@ -137,3 +137,7 @@ uppers
 res/cache/*
 config.ini
 *.py.edit
+bili_notice_test.py
+*_raw.json
+*_rep.json
+convent_svg2png.py
