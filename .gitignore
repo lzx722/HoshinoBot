@@ -143,3 +143,4 @@ hoshino/modules/priconne/_pcr_data.py
 hoshino/modules/priconne/gacha/config.json
 hoshino/modules/YoCool-Console/backup
 hoshino/modules/YoCool-Console/yocool_info.json
+hoshino/modules/github_reminder/config.yml

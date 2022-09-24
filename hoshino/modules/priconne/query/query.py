@@ -20,7 +20,7 @@ def get_support_rank(t: datetime, server):
     return rank
 
 
-@sv.on_rex(r'^(\*?([日台国陆b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$')
+#@sv.on_rex(r'^(\*?([日台国陆b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$')
 async def rank_sheet(bot, ev):
     match = ev['match']
     is_jp = match.group(2) == '日'
