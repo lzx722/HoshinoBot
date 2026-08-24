@@ -72,6 +72,10 @@ class SonetSpider(BaseSpider):
 class BiliSpider(BaseSpider):
     url = "http://api.biligame.com/news/list?gameExtensionId=267&positionId=2&pageNum=1&pageSize=7&typeId="
     src_name = "B服官网"
+    header = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Referer': 'https://game.bilibili.com/pcr/news.html'
+    }
 
     @staticmethod
     async def get_items(resp:aiorequests.AsyncResponse):

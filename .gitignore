@@ -136,3 +136,12 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+
+
+# 目前有更新的文件或项目
+hoshino/modules/autopcr/
+
+# 我维护的插件
+hoshino/modules/setu_renew/
+hoshino/modules/rss_juya/

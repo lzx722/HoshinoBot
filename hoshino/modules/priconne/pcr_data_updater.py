@@ -39,7 +39,8 @@ async def pull_chara(sess: CommandSession = None):
         return
 
     result = f"角色别称导入成功 {result['success']}，重名 {result['duplicate']}"
-    await report_to_su(sess, result, f'pcr_data定时更新：\n{result}')
+    if sess:
+        await report_to_su(sess, result, f'pcr_data定时更新：\n{result}')
 
 
 sucmd('update-pcr-chara', force_private=False, aliases=('重载花名册', '更新花名册'))(pull_chara)

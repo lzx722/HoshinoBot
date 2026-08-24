@@ -7,13 +7,13 @@ sv = Service('anti-kfc', enable_on_default=False)
 
 CRAZY_THURSDAY_ALIAS = list(map(''.join, itertools.product(('疯狂', '狂乱'), ('星期四', '木曜日', '星期寺'))))
 THURSDAY_ALIAS = ['⭐期四', '⭐期4']
-VME50_ALIAS = list(map(''.join, itertools.product(
+VME50_ALIAS = list({util.normalize_str(x): x for x in map(''.join, itertools.product(
     ('v', 'give', '给', '送', '微', 'send', 'transfer', 'vi'),
     ('', ' '),
     ('', '我', '卧', '窝', '窩', '沃', '在下', '朕', '孤', '私', '俺', '僕', '咱', 'me', 'i', 'w', 'wo', 'vo'),
     ('', ' '),
     ('五', '50', '5十', '5百', 'five', 'fifty', 'half 100', 'half100', 'half百', 'half1百', 'half 1百'),
-)))
+))}.values())
 
 
 @sv.on_keyword(

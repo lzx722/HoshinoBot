@@ -1,9 +1,9 @@
 from hoshino import Service, util
 from .spider import *
 
-svtw = Service('pcr-news-tw', bundle='pcr订阅', help_='台服官网新闻')
-svbl = Service('pcr-news-bili', bundle='pcr订阅', help_='B服官网新闻')
-svjp = Service('pcr-news-jp', bundle='pcr订阅', help_='日服官网新闻')
+svtw = Service('pcr-news-tw', bundle='pcr订阅', help_='台服官网新闻',enable_on_default=False)
+svbl = Service('pcr-news-bili', bundle='pcr订阅', help_='B服官网新闻',enable_on_default=False)
+svjp = Service('pcr-news-jp', bundle='pcr订阅', help_='日服官网新闻',enable_on_default=False)
 
 async def news_poller(spider:BaseSpider, sv:Service, TAG):
     if not spider.item_cache:
@@ -18,15 +18,15 @@ async def news_poller(spider:BaseSpider, sv:Service, TAG):
     randomizer = util.randomizer(spider.src_name + '新闻')
     await sv.broadcast(spider.format_items(news), TAG, 0.5, randomizer)
 
-@svtw.scheduled_job('cron', minute='*/5', jitter=20)
+# @svtw.scheduled_job('cron', minute='*/5', jitter=20)
 async def sonet_news_poller():
     await news_poller(SonetSpider, svtw, '台服官网')
 
-@svbl.scheduled_job('cron', minute='*/5', jitter=20)
+@svbl.scheduled_job('cron', minute='*/45', jitter=60)
 async def bili_news_poller():
     await news_poller(BiliSpider, svbl, 'B服官网')
 
-@svjp.scheduled_job('cron', minute='*/5', jitter=20)
+# @svjp.scheduled_job('cron', minute='*/5', jitter=20)
 async def jp_news_poller():
     await news_poller(JpSpider, svjp, '日服官网')
 

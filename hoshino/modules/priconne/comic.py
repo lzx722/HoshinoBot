@@ -15,7 +15,7 @@ sv_help = '''
 官方四格漫画更新(日文)
 [官漫132] 阅览指定话
 '''.strip()
-sv = Service('pcr-comic', help_=sv_help, bundle='pcr订阅')
+sv = Service('pcr-comic', help_=sv_help, bundle='pcr订阅',enable_on_default=False)
 
 def load_index():
     with open(R.get('img/priconne/comic/index.json').path, encoding='utf8') as f:
@@ -96,7 +96,7 @@ async def download_comic(id_):
         json.dump(index, f, ensure_ascii=False)
 
 
-@sv.scheduled_job('cron', minute='*/5', second='25')
+# @sv.scheduled_job('cron', minute='*/5', second='25')
 async def update_seeker():
     '''
     轮询官方四格漫画更新
