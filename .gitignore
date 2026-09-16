@@ -143,7 +143,6 @@ venv.bak/
 hoshino/modules/autopcr/
 
 # 我维护的插件
-hoshino/modules/setu_renew/
 hoshino/modules/rss_juya/
 
 # 自定义测试文件夹
