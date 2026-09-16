@@ -12,7 +12,7 @@ from PIL import Image
 
 import hoshino
 from hoshino import R
-from .config import get_config
+from ._config import get_config
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())

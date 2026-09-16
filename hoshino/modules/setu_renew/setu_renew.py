@@ -95,8 +95,8 @@ if not os.path.exists(gpcfgpath):
 		hoshino.logger.error('[ERROR]创建群个体设置文件失败，请检查插件目录的读写权限。')
 		traceback.print_exc()
 
-from .base import *
-from .config import get_config, get_group_config, get_group_info, set_group_config, group_list_check, set_group_list
+from ._base import *
+from ._config import get_config, get_group_config, get_group_info, set_group_config, group_list_check, set_group_list
 
 # 设置limiter
 tlmt = hoshino.util.DailyNumberLimiter(get_config('base', 'daily_max'))

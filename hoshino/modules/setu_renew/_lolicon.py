@@ -10,7 +10,7 @@ from PIL import Image
 
 import hoshino
 from hoshino import R
-from .config import get_api_num, get_config, key_vaildable_query, set_key_invaild
+from ._config import get_api_num, get_config, key_vaildable_query, set_key_invaild
 
 quota_limit_time = datetime.datetime.now()
 
