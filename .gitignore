@@ -142,8 +142,6 @@ venv.bak/
 # 目前有更新的文件或项目
 hoshino/modules/autopcr/
 
-# 我维护的插件
-
 # 自定义测试文件夹
 test/
 tmp/

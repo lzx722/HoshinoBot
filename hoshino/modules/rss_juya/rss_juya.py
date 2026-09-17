@@ -47,7 +47,8 @@ async def send_rss(bot, ev):
 
     try:
         async with _push_lock:
-            updates = await JuyaRssSpider.refresh()
+            # 只取内容不登记已推送，否则会吃掉当天的定时群推送
+            updates = await JuyaRssSpider.fetch()
             if updates:
                 sv.logger.info(f'手动刷新检索到{len(updates)}条更新')
     except Exception as e:
