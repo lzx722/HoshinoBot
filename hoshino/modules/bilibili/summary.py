@@ -1,12 +1,8 @@
 import asyncio
 from collections import defaultdict
 import re
-from typing import List, Dict, Any
+from typing import List, Optional
 
-from aiocqhttp.exceptions import ActionFailed
-
-import hoshino
-from hoshino import priv
 from hoshino.service import Service
 from hoshino.typing import CQEvent
 
@@ -54,78 +50,60 @@ CONCISE_PREFIXES = (
 EXPLICIT_PREFIXES = DETAILED_PREFIXES + CONCISE_PREFIXES
 
 
-def _build_forward_nodes(ev: CQEvent, header: str, summary: str) -> List[Dict[str, Any]]:
-    """构造 QQ 合并转发节点（将超长总结按章节分块放入聊天记录卡片）"""
-    bot_name = hoshino.config.NICKNAME[0] if getattr(hoshino.config, "NICKNAME", None) else "B站视频总结"
-    uin = str(ev.self_id)
+# 单条消息字数上限：超过则切块分多条发送
+SINGLE_MSG_LIMIT = 3000
 
-    # 按照二级标题 "## " 切分章节
-    sections = re.split(r"\n(?=##\s+)", summary.strip())
-    nodes: List[Dict[str, Any]] = []
 
-    # 首节点：放置头部标题 + 第一部分（如主旨概览）
-    first_part = sections[0].strip() if sections else summary.strip()
-    nodes.append({
-        "type": "node",
-        "data": {
-            "name": bot_name,
-            "uin": uin,
-            "content": f"{header}\n━━━━━━━━━━━━━━\n{first_part}"
-        }
-    })
+def _split_text(text: str, max_len: int = SINGLE_MSG_LIMIT, first_len: Optional[int] = None) -> List[str]:
+    """按行切块，每块不超过 max_len 字；first_len 可单独限制首块容量（给头部标题留位）。
 
-    # 后续节点：放置各个二级章节
-    for sec in sections[1:]:
-        sec = sec.strip()
-        if not sec:
+    先按最大容量估算块数，再据此设定每块的软目标长度，使各块长度尽量均分，
+    避免出现末尾只有几十字的碎片消息。硬上限始终生效；单行本身超长时退化为硬切，
+    保证不会出现被 QQ 拒发的超长消息。
+    """
+    lines = text.splitlines()
+    if not lines:
+        return []
+
+    cap0 = max_len if first_len is None else first_len
+    units = [len(line) + 1 for line in lines]  # +1 为换行符
+    total = sum(units)
+
+    # 估算块数：首块容量受限时可能多出一块
+    n = max(1, -(-total // max_len))
+    if cap0 < max_len:
+        n = max(n, -(-(total + max_len - cap0) // max_len))
+    target = total / n
+
+    chunks: List[str] = []
+    cur: List[str] = []
+    cur_len = 0
+    limit = cap0
+
+    for line, unit in zip(lines, units):
+        # 单行本身超过容量：先吐出已积累内容，再把该行均分为若干不超限的片段
+        if len(line) > limit:
+            if cur:
+                chunks.append("\n".join(cur))
+                cur, cur_len = [], 0
+            k = -(-len(line) // limit)
+            size = -(-len(line) // k)
+            for i in range(0, len(line), size):
+                chunks.append(line[i:i + size])
+            limit = max_len
             continue
-        # 如果单个章节较长（>1000字），进一步按段落拆分
-        if len(sec) > 1000:
-            sub_chunks = [sec[i:i + 900] for i in range(0, len(sec), 900)]
-            for chunk in sub_chunks:
-                nodes.append({
-                    "type": "node",
-                    "data": {
-                        "name": bot_name,
-                        "uin": uin,
-                        "content": chunk.strip()
-                    }
-                })
-        else:
-            nodes.append({
-                "type": "node",
-                "data": {
-                    "name": bot_name,
-                    "uin": uin,
-                    "content": sec
-                }
-            })
 
-    return nodes
+        if cur and (cur_len + unit > limit or cur_len >= target):
+            chunks.append("\n".join(cur))
+            cur, cur_len = [], 0
+            limit = max_len
 
+        cur.append(line)
+        cur_len += unit
 
-async def _send_chunks(bot, ev: CQEvent, header: str, summary: str):
-    """分段发送降级兜底（防止单条消息文本过长触发 QQ code=34 拒绝）"""
-    full_text = f"{header}\n━━━━━━━━━━━━━━\n{summary}"
-    if len(full_text) <= 600:
-        await bot.send(ev, full_text)
-        return
-
-    lines = full_text.splitlines()
-    chunk: List[str] = []
-    chunk_len = 0
-    for line in lines:
-        if chunk_len + len(line) > 600 and chunk:
-            await bot.send(ev, "\n".join(chunk))
-            await asyncio.sleep(0.6)
-            chunk = [line]
-            chunk_len = len(line)
-        else:
-            chunk.append(line)
-            chunk_len += len(line) + 1
-
-    if chunk:
-        await bot.send(ev, "\n".join(chunk))
+    if cur:
+        chunks.append("\n".join(cur))
+    return [c for c in chunks if c.strip()]
 
 
 async def _send_summary_reply(
@@ -135,44 +113,30 @@ async def _send_summary_reply(
     uploader: str,
     mode_name: str,
     summary: str,
-    style: str,
     from_cache: bool = False,
 ):
-    """安全智能发送视频总结结果：
-    - 精炼速读版（短文本）：优先直接发送单条消息，失败则降级
-    - 详尽深度版（长文本）：优先采用群合并转发卡片发送，彻底避开 QQ code=34（消息超长拒发）
-    - 自动异常捕获与分段降级兜底
-    """
+    """发送视频总结结果：短文本直接发送，长文本按 3000 字切块分条发送"""
     up_str = f"（UP主：{uploader}）" if uploader else ""
     cache_str = "（来自缓存）" if from_cache else ""
-    header = f"🎬 B站视频{mode_name}{cache_str}：《{title}》{up_str}"
-    full_reply = f"{header}\n━━━━━━━━━━━━━━\n{summary}"
+    # 标题/UP主异常长时会挤占正文容量，截断头部以保证首条至少留一半容量给正文
+    prefix = f"🎬 B站视频{mode_name}{cache_str}："
+    tail = "\n━━━━━━━━━━━━━━\n"
+    head_body = f"《{title}》{up_str}"
+    room = max(20, SINGLE_MSG_LIMIT // 2 - len(prefix) - len(tail))
+    if len(head_body) > room:
+        head_body = head_body[:room - 1] + "…"
+    header = f"{prefix}{head_body}{tail}"
 
-    # 1. 若非详细版且字数较短，直接尝试普通单条消息发送
-    if style != "detailed" and len(full_reply) < 800:
-        try:
-            await bot.send(ev, full_reply)
-            return
-        except ActionFailed as e:
-            sv.logger.warning(f"单条消息发送失败({e})，准备尝试合并转发/分段降级")
+    body_limit = SINGLE_MSG_LIMIT - len(header)
+    if len(summary) <= body_limit:
+        await bot.send(ev, header + summary)
+        return
 
-    # 2. 详尽深度版（或长消息）：在群聊环境下优先采用合并转发卡片
-    if getattr(ev, "group_id", None):
-        try:
-            nodes = _build_forward_nodes(ev, header, summary)
-            await bot.send_group_forward_msg(group_id=ev.group_id, messages=nodes)
-            return
-        except ActionFailed as e:
-            sv.logger.warning(f"合并转发发送失败({e})，准备降级为分段发送")
-        except Exception as e:
-            sv.logger.exception(f"合并转发未知异常: {e}")
-
-    # 3. 兜底方案：分段普通消息发送
-    try:
-        await _send_chunks(bot, ev, header, summary)
-    except Exception as e:
-        sv.logger.exception(f"分段发送总结依然失败: {e}")
-        await bot.send(ev, f"❌ 视频总结已生成，但由于平台风控或消息限制发送失败: {e}")
+    chunks = _split_text(summary, first_len=body_limit)
+    for i, chunk in enumerate(chunks):
+        if i:
+            await asyncio.sleep(0.6)  # 降低连续发送触发风控的概率
+        await bot.send(ev, header + chunk if i == 0 else chunk)
 
 
 async def _do_summary(bot, ev: CQEvent, text: str, style: str = "concise"):
@@ -198,7 +162,7 @@ async def _do_summary(bot, ev: CQEvent, text: str, style: str = "concise"):
             uploader = cached.get("uploader", "")
             summary = _bili_llm.strip_leading_title(cached["summary"])
             await _send_summary_reply(
-                bot, ev, title, uploader, mode_name, summary, style=style, from_cache=True
+                bot, ev, title, uploader, mode_name, summary, from_cache=True
             )
             return
 
@@ -258,7 +222,7 @@ async def _do_summary(bot, ev: CQEvent, text: str, style: str = "concise"):
 
         # 6. 发送总结结果（支持合并转发与分段降级）
         await _send_summary_reply(
-            bot, ev, title, uploader, mode_name, summary, style=style, from_cache=False
+            bot, ev, title, uploader, mode_name, summary, from_cache=False
         )
 
 

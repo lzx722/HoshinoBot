@@ -143,6 +143,5 @@ venv.bak/
 hoshino/modules/autopcr/
 
 # 自定义测试文件夹
-test/
-tmp/
+/test/
 
