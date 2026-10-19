@@ -176,7 +176,8 @@ class JuyaRssSpider:
             if not guid:
                 continue
 
-            msgs = [f'【{title}】橘鸦AI早报\n{link}']
+            # 不带原文链接：群消息里的 URL 会触发 QQ 的「谨防诈骗」提示
+            msgs = [f'【{title}】橘鸦AI早报']
             encoded = data.get('encoded') or ''
             if encoded:
                 msgs.extend(cls._extract_news(encoded))
